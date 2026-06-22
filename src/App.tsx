@@ -10,11 +10,27 @@ import {
 import { Expense, MonthlyBudget, TabType, ThemeType } from './types.ts';
 import { SYSTEM_CATEGORIES } from './constants.ts';
 
+// Firebase imports
+import { onAuthStateChanged, type User } from 'firebase/auth';
+import { 
+  auth, 
+  signInWithGoogle, 
+  logoutUser, 
+  syncUserSettings, 
+  updateDbSettings, 
+  fetchUserExpensesFromDb, 
+  saveUserExpenseToDb, 
+  deleteUserExpenseFromDb, 
+  mergeLocalExpensesToDb,
+  clearAllUserExpensesFromDb 
+} from './lib/firebase.ts';
+
 // Component imports
 import Dashboard from './components/Dashboard.tsx';
 import ExpenseList from './components/ExpenseList.tsx';
 import ExpenseFormPage from './components/ExpenseFormPage.tsx';
 import Settings from './components/Settings.tsx';
+import AuthPage from './components/AuthPage.tsx';
 
 // Empty seed records for brand new user state
 const SEED_EXPENSES: Expense[] = [];
@@ -56,31 +72,86 @@ export default function App() {
     }
   }, [activeTab]);
 
-  // --- Initial state recovery from DB ---
-  useEffect(() => {
-    const loadStateFromServer = async () => {
-      try {
-        setSyncStatus('syncing');
-        const res = await fetch('/api/state');
-        if (res.ok) {
-          const remoteState = await res.json();
-          if (remoteState.expenses) {
-            setExpenses(remoteState.expenses);
-            // Sync fallback details if server state is set
-            if (remoteState.budget) setBudget(remoteState.budget);
-            if (remoteState.currency) setCurrencySymbol(remoteState.currency);
-            if (remoteState.theme) setTheme(remoteState.theme);
-            setSyncStatus('synced');
-            return;
-          }
+  // --- States for Firebase Authentication ---
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  // Load state from traditional Express server (for guest/unauthenticated flow)
+  const loadStateFromServer = async () => {
+    try {
+      setSyncStatus('syncing');
+      const res = await fetch('/api/state');
+      if (res.ok) {
+        const remoteState = await res.json();
+        if (remoteState.expenses) {
+          setExpenses(remoteState.expenses);
+          if (remoteState.budget) setBudget(remoteState.budget);
+          if (remoteState.currency) setCurrencySymbol(remoteState.currency);
+          if (remoteState.theme) setTheme(remoteState.theme);
+          setSyncStatus('synced');
+          return;
         }
-        setSyncStatus('offline');
-      } catch (err) {
-        console.warn('Backend server unreachable or load state failed. Using offline cache.');
-        setSyncStatus('offline');
       }
-    };
-    loadStateFromServer();
+      setSyncStatus('offline');
+    } catch (err) {
+      console.warn('Express server load state failed. Using local storage layout.');
+      setSyncStatus('offline');
+    }
+  };
+
+  // Listen to Firebase Auth transactions and sync profile state
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setCurrentUser(user);
+      if (user) {
+        try {
+          setSyncStatus('syncing');
+          // 1. Sync configuration parameters
+          const remoteSettings = await syncUserSettings(user, {
+            currency: currencySymbol,
+            budget,
+            theme
+          });
+
+          // 2. Query transactions database
+          let dbExpenses = await fetchUserExpensesFromDb(user);
+
+          // 3. Gracefully merge any pre-existing local expenses to Firestore on first authenticaton
+          const savedExpenses = localStorage.getItem('ios_expenses');
+          const localOnly = savedExpenses ? JSON.parse(savedExpenses) : [];
+          if (dbExpenses.length === 0 && localOnly.length > 0) {
+            await mergeLocalExpensesToDb(user, localOnly);
+            dbExpenses = await fetchUserExpensesFromDb(user);
+          }
+
+          // 4. Update memory layout
+          setExpenses(dbExpenses);
+          setBudget({ limit: remoteSettings.budgetLimit, isEnabled: remoteSettings.budgetEnabled });
+          setCurrencySymbol(remoteSettings.currency);
+          setTheme(remoteSettings.theme as ThemeType);
+          setSyncStatus('synced');
+        } catch (err) {
+          console.error('Failed to sync Firestore datastore context:', err);
+          setSyncStatus('offline');
+        }
+      } else {
+        // Clear all state values so we don't leak previous user data
+        setExpenses([]);
+        setBudget({ limit: 15000.00, isEnabled: true });
+        setCurrencySymbol('₱');
+        setTheme('light');
+        localStorage.removeItem('ios_expenses');
+        localStorage.removeItem('ios_budget');
+        localStorage.removeItem('ios_currency');
+        localStorage.removeItem('ios_theme');
+
+        // Run standard unauthenticated backend loader
+        await loadStateFromServer();
+      }
+      setAuthLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
   // --- Automatic Sync State dispatching ---
@@ -90,34 +161,37 @@ export default function App() {
     currentCurrency: string,
     currentTheme: ThemeType
   ) => {
-    // 1. Immediately backup to local cache
+    // 1. Immediately cache locally
     localStorage.setItem('ios_expenses', JSON.stringify(currentExpenses));
     localStorage.setItem('ios_budget', JSON.stringify(currentBudget));
     localStorage.setItem('ios_currency', currentCurrency);
     localStorage.setItem('ios_theme', currentTheme);
 
-    // 2. Dispatch query to backend
-    try {
-      setSyncStatus('syncing');
-      const res = await fetch('/api/state', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          expenses: currentExpenses,
-          budget: currentBudget,
-          currency: currentCurrency,
-          theme: currentTheme
-        })
-      });
-      if (res.ok) {
-        setSyncStatus('synced');
-      } else {
+    // If authenticated, changes are already written directly in custom click handlers.
+    // However, if unauthenticated, save to backend json database.
+    if (!auth.currentUser) {
+      try {
+        setSyncStatus('syncing');
+        const res = await fetch('/api/state', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            expenses: currentExpenses,
+            budget: currentBudget,
+            currency: currentCurrency,
+            theme: currentTheme
+          })
+        });
+        if (res.ok) {
+          setSyncStatus('synced');
+        } else {
+          setSyncStatus('offline');
+        }
+      } catch {
         setSyncStatus('offline');
       }
-    } catch {
-      setSyncStatus('offline');
     }
   };
 
@@ -146,14 +220,23 @@ export default function App() {
   }, []);
 
   // --- Operations / Actions handlers ---
-  const handleSaveExpense = (newExpenseData: Omit<Expense, 'id'> & { id?: string }) => {
+  const handleSaveExpense = async (newExpenseData: Omit<Expense, 'id'> & { id?: string }) => {
     let nextExpenses = [...expenses];
+    let entry: Expense;
     if (newExpenseData.id) {
       // Edit
-      nextExpenses = expenses.map((item) => item.id === newExpenseData.id ? (newExpenseData as Expense) : item);
+      entry = {
+        amount: newExpenseData.amount,
+        description: newExpenseData.description,
+        date: newExpenseData.date,
+        categoryId: newExpenseData.categoryId,
+        notes: newExpenseData.notes,
+        id: newExpenseData.id
+      };
+      nextExpenses = expenses.map((item) => item.id === newExpenseData.id ? entry : item);
     } else {
       // Create
-      const entry: Expense = {
+      entry = {
         ...newExpenseData,
         id: `expense-${Date.now()}`
       };
@@ -161,33 +244,95 @@ export default function App() {
     }
     setExpenses(nextExpenses);
     setExpenseToEdit(null);
-    triggerSync(nextExpenses, budget, currencySymbol, theme);
+
+    if (currentUser) {
+      try {
+        setSyncStatus('syncing');
+        await saveUserExpenseToDb(currentUser, entry);
+        setSyncStatus('synced');
+        localStorage.setItem('ios_expenses', JSON.stringify(nextExpenses));
+      } catch (err) {
+        console.error('Failed to sync to database:', err);
+        setSyncStatus('offline');
+      }
+    } else {
+      triggerSync(nextExpenses, budget, currencySymbol, theme);
+    }
   };
 
-  const handleDeleteExpense = (id: string) => {
+  const handleDeleteExpense = async (id: string) => {
     const nextExpenses = expenses.filter((item) => item.id !== id);
     setExpenses(nextExpenses);
     if (expenseToEdit && expenseToEdit.id === id) {
       setExpenseToEdit(null);
     }
-    triggerSync(nextExpenses, budget, currencySymbol, theme);
+
+    if (currentUser) {
+      try {
+        setSyncStatus('syncing');
+        await deleteUserExpenseFromDb(currentUser, id);
+        setSyncStatus('synced');
+        localStorage.setItem('ios_expenses', JSON.stringify(nextExpenses));
+      } catch (err) {
+        console.error('Failed to delete transaction:', err);
+        setSyncStatus('offline');
+      }
+    } else {
+      triggerSync(nextExpenses, budget, currencySymbol, theme);
+    }
   };
 
-  const handleUpdateBudget = (newLimit: number) => {
+  const handleUpdateBudget = async (newLimit: number) => {
     const nextBudget = { limit: newLimit, isEnabled: true };
     setBudget(nextBudget);
-    triggerSync(expenses, nextBudget, currencySymbol, theme);
+
+    if (currentUser) {
+      try {
+        setSyncStatus('syncing');
+        await updateDbSettings(currentUser, { budgetLimit: newLimit, budgetEnabled: true });
+        setSyncStatus('synced');
+        localStorage.setItem('ios_budget', JSON.stringify(nextBudget));
+      } catch (err) {
+        setSyncStatus('offline');
+      }
+    } else {
+      triggerSync(expenses, nextBudget, currencySymbol, theme);
+    }
   };
 
-  const handleUpdateCurrency = (symbol: string) => {
+  const handleUpdateCurrency = async (symbol: string) => {
     setCurrencySymbol(symbol);
-    triggerSync(expenses, budget, symbol, theme);
+
+    if (currentUser) {
+      try {
+        setSyncStatus('syncing');
+        await updateDbSettings(currentUser, { currency: symbol });
+        setSyncStatus('synced');
+        localStorage.setItem('ios_currency', symbol);
+      } catch (err) {
+        setSyncStatus('offline');
+      }
+    } else {
+      triggerSync(expenses, budget, symbol, theme);
+    }
   };
 
-  const handleToggleTheme = () => {
+  const handleToggleTheme = async () => {
     const nextTheme = theme === 'light' ? 'dark' : 'light';
     setTheme(nextTheme);
-    triggerSync(expenses, budget, currencySymbol, nextTheme);
+
+    if (currentUser) {
+      try {
+        setSyncStatus('syncing');
+        await updateDbSettings(currentUser, { theme: nextTheme });
+        setSyncStatus('synced');
+        localStorage.setItem('ios_theme', nextTheme);
+      } catch (err) {
+        setSyncStatus('offline');
+      }
+    } else {
+      triggerSync(expenses, budget, currencySymbol, nextTheme);
+    }
   };
 
   const handleBackupData = () => {
@@ -226,14 +371,39 @@ export default function App() {
     }
   };
 
-  const handleClearData = () => {
+  const handleClearData = async () => {
     setExpenses([]);
     const defaultBudget = { limit: 15000.00, isEnabled: true };
     setBudget(defaultBudget);
     setCurrencySymbol('₱');
     setTheme('light');
     setActiveTab('dashboard');
-    triggerSync([], defaultBudget, '₱', 'light');
+
+    localStorage.setItem('ios_expenses', JSON.stringify([]));
+    localStorage.setItem('ios_budget', JSON.stringify(defaultBudget));
+    localStorage.setItem('ios_currency', '₱');
+    localStorage.setItem('ios_theme', 'light');
+
+    if (currentUser) {
+      try {
+        setSyncStatus('syncing');
+        // Clear all user expenses in Firestore
+        await clearAllUserExpensesFromDb(currentUser);
+        // Reset DB preferences to default
+        await updateDbSettings(currentUser, {
+          currency: '₱',
+          budgetLimit: 15000.00,
+          budgetEnabled: true,
+          theme: 'light'
+        });
+        setSyncStatus('synced');
+      } catch (err) {
+        console.error('Failed to clear client data in cloud:', err);
+        setSyncStatus('offline');
+      }
+    } else {
+      triggerSync([], defaultBudget, '₱', 'light');
+    }
   };
 
   const handleSelectExpenseForEdit = (expense: Expense) => {
@@ -241,8 +411,25 @@ export default function App() {
     setActiveTab('add');
   };
 
+  // 1. Loading screen during Firebase auth initial handshake
+  if (authLoading) {
+    return (
+      <div className={`${theme} min-h-screen bg-[#F4F4F7] dark:bg-[#0A0A0C] flex flex-col items-center justify-center p-4`} id="auth-loading-frame">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-3 border-blue-500 border-t-transparent rounded-full animate-spin" id="root-loading-spinner" />
+          <span className="text-xs font-bold text-neutral-450 dark:text-neutral-500 uppercase tracking-widest animate-pulse">Initializing ...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // 2. Authentication fence: force sign in / sign up before allowing tracker access
+  if (!currentUser) {
+    return <AuthPage theme={theme} />;
+  }
+
   return (
-    <div className="min-h-screen bg-[#F4F4F7] dark:bg-[#0A0A0C] font-sans antialiased text-neutral-950 dark:text-white transition-colors flex flex-col justify-between relative" id="applet-primary-container">
+    <div className={`${theme} min-h-screen bg-[#F4F4F7] dark:bg-[#0A0A0C] font-sans antialiased text-neutral-950 dark:text-white transition-colors flex flex-col justify-between relative`} id="applet-primary-container">
       
       {/* Subtle Floating DB Connection Status Indicator (No layout footprint) */}
       <div className="absolute top-4 right-4 z-50 flex items-center gap-1.5 pointer-events-none select-none">
@@ -308,6 +495,10 @@ export default function App() {
             onBackup={handleBackupData}
             onRestore={handleRestoreData}
             onClearData={handleClearData}
+            currentUser={currentUser}
+            authLoading={authLoading}
+            onSignIn={async () => { await signInWithGoogle(); }}
+            onSignOut={async () => { await logoutUser(); }}
           />
         )}
       </main>

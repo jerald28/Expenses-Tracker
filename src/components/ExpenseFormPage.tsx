@@ -197,7 +197,7 @@ export default function ExpenseFormPage({
                     className={`p-3 rounded-xl flex flex-row items-center gap-2 text-left transition-all cursor-pointer border ${
                       isSelected 
                         ? 'text-white font-bold border-transparent' 
-                        : 'bg-neutral-50 dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 border-neutral-200/40 dark:border-neutral-800/60 hover:brightness-95 hover:bg-neutral-100 dark:hover:bg-neutral-850'
+                        : 'bg-neutral-50 dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 border-neutral-200/40 dark:border-neutral-800/60 hover:brightness-95 hover:bg-neutral-200/50 dark:hover:bg-neutral-800/50'
                     }`}
                     style={{ 
                       backgroundColor: isSelected ? cat.color : undefined,

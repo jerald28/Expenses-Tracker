@@ -1,0 +1,90 @@
+{
+  "collections": {
+    "users": {
+      "description": "User profiles and aggregate settings",
+      "fields": {
+        "uid": {
+          "type": "string",
+          "required": true,
+          "description": "Firebase Auth user unique ID"
+        },
+        "email": {
+          "type": "string",
+          "required": true,
+          "description": "User email address"
+        },
+        "displayName": {
+          "type": "string",
+          "required": false,
+          "description": "User profile name"
+        },
+        "currency": {
+          "type": "string",
+          "required": true,
+          "description": "Preferred currency symbol (e.g., ₱, $, €)"
+        },
+        "budgetLimit": {
+          "type": "number",
+          "required": true,
+          "description": "Monthly budget limit"
+        },
+        "budgetEnabled": {
+          "type": "boolean",
+          "required": true,
+          "description": "Whether budget limits are enabled"
+        },
+        "theme": {
+          "type": "string",
+          "required": true,
+          "description": "App appearance preference ('light' or 'dark')"
+        },
+        "updatedAt": {
+          "type": "timestamp",
+          "required": true,
+          "description": "Last settings sync timestamp"
+        }
+      }
+    },
+    "expenses": {
+      "parent": "users",
+      "description": "Subcollection of expenses for each authenticated family/user profile",
+      "fields": {
+        "id": {
+          "type": "string",
+          "required": true,
+          "description": "Unique expense record ID"
+        },
+        "amount": {
+          "type": "number",
+          "required": true,
+          "description": "Amount spent in chosen currency"
+        },
+        "description": {
+          "type": "string",
+          "required": true,
+          "description": "Merchant name or payment description"
+        },
+        "date": {
+          "type": "string",
+          "required": true,
+          "description": "ISO date string (YYYY-MM-DD)"
+        },
+        "categoryId": {
+          "type": "string",
+          "required": true,
+          "description": "System category ID (e.g. food, shopping, trans, bills, leisure, other)"
+        },
+        "notes": {
+          "type": "string",
+          "required": false,
+          "description": "Optional notes or details"
+        },
+        "createdAt": {
+          "type": "timestamp",
+          "required": true,
+          "description": "Creation timestamp"
+        }
+      }
+    }
+  }
+}
