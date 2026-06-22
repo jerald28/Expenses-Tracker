@@ -1,0 +1,6 @@
+{
+  "name": "Expense Tracker",
+  "description": "An iOS-style, offline-first mobile expense tracker with intuitive categorization, elegant financial widgets, and support for light and dark modes.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
