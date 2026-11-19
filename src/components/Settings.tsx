@@ -1,3 +1,4 @@
+import InstallAppButton from './InstallApp.tsx';
 import React, { useState, useRef } from 'react';
 import type { User } from 'firebase/auth';
 import { motion, AnimatePresence } from 'motion/react';
@@ -185,6 +186,11 @@ export default function Settings({
               </span>
             </div>
             
+            <InstallAppButton
+              className="w-full py-2.5 bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold rounded-xl transition-all cursor-pointer active:scale-95 inline-flex items-center justify-center"
+              label="Install Pesus on this device"
+            />
+
             <button
               onClick={onSignOut}
               type="button"

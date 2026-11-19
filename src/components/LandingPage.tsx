@@ -10,6 +10,7 @@ import '@fontsource/familjen-grotesk/700.css';
 import '@fontsource/ibm-plex-mono/400.css';
 import '@fontsource/ibm-plex-mono/600.css';
 import './landing.css';
+import InstallAppButton from './InstallApp.tsx';
 
 gsap.registerPlugin(ScrollTrigger, Draggable, InertiaPlugin);
 
@@ -210,6 +211,7 @@ export default function LandingPage({ onAuth }: LandingPageProps) {
                 <button type="button" className="lp-btn lp-btn--ghost" onClick={() => onAuth('signin')}>Sign in</button>
               </div>
               <p className="lp-note">Uses your Google account. No new password to remember.</p>
+              <InstallAppButton label="Install the app on your phone" />
             </div>
 
             <div className="lp-printer" aria-label="Example receipt of a day's spending">
@@ -361,6 +363,10 @@ export default function LandingPage({ onAuth }: LandingPageProps) {
                   <li><b>₱0</b><span>a month</span></li>
                   <li><b>1 tap</b><span>Google sign-in</span></li>
                 </ul>
+                <div className="lp-final-install">
+                  <p><b>Get Pesus on your phone</b>Install it from your browser. No app store needed.</p>
+                  <InstallAppButton className="lp-btn lp-btn--primary lp-btn--sm" label="Install app" />
+                </div>
               </div>
               <div className="lp-final-photo">
                 <img

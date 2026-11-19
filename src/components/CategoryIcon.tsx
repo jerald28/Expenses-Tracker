@@ -1,5 +1,5 @@
 import React from 'react';
-import * as Icons from 'lucide-react';
+import { Utensils, ShoppingBag, Car, Film, Home, Heart, Plane, BookOpen, HelpCircle } from 'lucide-react';
 
 interface CategoryIconProps {
   name: string;
@@ -7,13 +7,12 @@ interface CategoryIconProps {
   size?: number;
 }
 
+// Only the icons used by categories are bundled (importing all of lucide added ~1.5 MB)
+const ICONS: Record<string, React.ComponentType<{ className?: string; size?: number }>> = {
+  Utensils, ShoppingBag, Car, Film, Home, Heart, Plane, BookOpen, HelpCircle,
+};
+
 export default function CategoryIcon({ name, className = '', size = 20 }: CategoryIconProps) {
-  // Safe dynamic lookup helper
-  const IconComponent = (Icons as Record<string, React.ComponentType<{ className?: string; size?: number }>>)[name];
-  
-  if (!IconComponent) {
-    return <Icons.HelpCircle className={className} size={size} />;
-  }
-  
+  const IconComponent = ICONS[name] ?? HelpCircle;
   return <IconComponent className={className} size={size} />;
 }
