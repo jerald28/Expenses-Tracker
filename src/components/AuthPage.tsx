@@ -28,8 +28,14 @@ export default function AuthPage({ theme }: AuthPageProps) {
       await signInWithGoogle();
     } catch (err: any) {
       console.error('Google Sign In failed:', err);
-      if (err.code !== 'auth/popup-closed-by-user') {
-        setErrorMessage(err.message || 'Google account authorization failed.');
+      const friendlyErrors: Record<string, string> = {
+        'auth/unauthorized-domain': 'Sign-in is not enabled for this website yet. Please try again later.',
+        'auth/popup-blocked': 'Your browser blocked the sign-in popup. Please allow popups for this site and try again.',
+        'auth/network-request-failed': 'Network error. Please check your connection and try again.',
+        'auth/too-many-requests': 'Too many attempts. Please wait a moment and try again.',
+      };
+      if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
+        setErrorMessage(friendlyErrors[err.code] || 'Google sign-in failed. Please try again.');
       }
     } finally {
       setLoading(false);

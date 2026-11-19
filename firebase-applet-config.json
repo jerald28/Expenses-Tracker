@@ -1,10 +1,10 @@
 {
-  "projectId": "bold-syntax-0wfkz",
-  "appId": "1:469735694860:web:4b848729e50fa1c0000429",
-  "apiKey": "AIzaSyAIB8az3EmuWFeseRxy9yIA3VcxdYBrg48",
-  "authDomain": "expenses-tracker-chi-six.vercel",
-  "firestoreDatabaseId": "ai-studio-407a12e3-f00b-45ae-b37f-578b2674aa84",
-  "storageBucket": "bold-syntax-0wfkz.firebasestorage.app",
-  "messagingSenderId": "469735694860",
+  "projectId": "pesus-tracker-9453a",
+  "appId": "1:125069845800:web:bccbd3101abf53ed951c1d",
+  "apiKey": "AIzaSyBGV5L8z6H4awoVkdhaUjSTnqjUPOQ-POM",
+  "authDomain": "pesus-tracker-9453a.firebaseapp.com",
+  "firestoreDatabaseId": "(default)",
+  "storageBucket": "pesus-tracker-9453a.firebasestorage.app",
+  "messagingSenderId": "125069845800",
   "measurementId": ""
 }

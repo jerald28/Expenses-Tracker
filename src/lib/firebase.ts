@@ -20,16 +20,17 @@ import {
   writeBatch
 } from 'firebase/firestore';
 
-// Firebase configuration from /firebase-applet-config.json
+// Firebase configuration (project: pesus-tracker-9453a)
+// Note: Firebase web config values are public identifiers, not secrets.
+// Access is protected by Firestore security rules and Auth authorized domains.
 const firebaseConfig = {
-  projectId: "bold-syntax-0wfkz",
-  appId: "1:469735694860:web:4b848729e50fa1c0000429",
-  apiKey: "AIzaSyAIB8az3EmuWFeseRxy9yIA3VcxdYBrg48",
-  authDomain: "bold-syntax-0wfkz.firebaseapp.com",
-  firestoreDatabaseId: "ai-studio-407a12e3-f00b-45ae-b37f-578b2674aa84",
-  storageBucket: "bold-syntax-0wfkz.firebasestorage.app",
-  messagingSenderId: "469735694860",
-  measurementId: ""
+  apiKey: "AIzaSyBGV5L8z6H4awoVkdhaUjSTnqjUPOQ-POM",
+  authDomain: "pesus-tracker-9453a.firebaseapp.com",
+  projectId: "pesus-tracker-9453a",
+  storageBucket: "pesus-tracker-9453a.firebasestorage.app",
+  messagingSenderId: "125069845800",
+  appId: "1:125069845800:web:bccbd3101abf53ed951c1d",
+  firestoreDatabaseId: "(default)"
 };
 
 // Initialize Firebase App
