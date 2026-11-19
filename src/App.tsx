@@ -31,6 +31,7 @@ import ExpenseList from './components/ExpenseList.tsx';
 import ExpenseFormPage from './components/ExpenseFormPage.tsx';
 import Settings from './components/Settings.tsx';
 import AuthPage from './components/AuthPage.tsx';
+import LandingPage from './components/LandingPage.tsx';
 
 // Empty seed records for brand new user state
 const SEED_EXPENSES: Expense[] = [];
@@ -75,6 +76,7 @@ export default function App() {
   // --- States for Firebase Authentication ---
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [authMode, setAuthMode] = useState<'signin' | 'signup' | null>(null);
 
   // Load state from traditional Express server (for guest/unauthenticated flow)
   const loadStateFromServer = async () => {
@@ -425,7 +427,22 @@ export default function App() {
 
   // 2. Authentication fence: force sign in / sign up before allowing tracker access
   if (!currentUser) {
-    return <AuthPage theme={theme} />;
+    if (!authMode) {
+      return (
+        <LandingPage
+          theme={theme}
+          onAuth={(mode) => {
+            setAuthMode(mode);
+            window.scrollTo(0, 0);
+          }}
+        />
+      );
+    }
+    return (
+      <div className={theme}>
+        <AuthPage theme={theme} initialMode={authMode} onBack={() => setAuthMode(null)} />
+      </div>
+    );
   }
 
   return (
@@ -498,7 +515,7 @@ export default function App() {
             currentUser={currentUser}
             authLoading={authLoading}
             onSignIn={async () => { await signInWithGoogle(); }}
-            onSignOut={async () => { await logoutUser(); }}
+            onSignOut={async () => { await logoutUser(); setAuthMode(null); }}
           />
         )}
       </main>

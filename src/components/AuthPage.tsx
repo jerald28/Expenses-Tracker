@@ -6,6 +6,7 @@ import {
   AlertCircle,
   Sparkles,
   ArrowRight,
+  ArrowLeft,
   ShieldCheck,
   TrendingUp,
   PieChart
@@ -13,10 +14,12 @@ import {
 
 interface AuthPageProps {
   theme: 'light' | 'dark';
+  initialMode?: 'signin' | 'signup';
+  onBack?: () => void;
 }
 
-export default function AuthPage({ theme }: AuthPageProps) {
-  const [activeMode, setActiveMode] = useState<'signin' | 'signup'>('signin');
+export default function AuthPage({ theme, initialMode = 'signin', onBack }: AuthPageProps) {
+  const [activeMode, setActiveMode] = useState<'signin' | 'signup'>(initialMode);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -45,6 +48,17 @@ export default function AuthPage({ theme }: AuthPageProps) {
   return (
     <div className={`min-h-screen flex items-center justify-center p-4 bg-[#F4F4F7] dark:bg-[#0A0A0C] transition-colors`} id="auth-page-root">
       <div className="w-full max-w-md" id="auth-card-container">
+        {onBack && (
+          <button
+            type="button"
+            onClick={onBack}
+            className="mb-6 inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-white transition-colors cursor-pointer"
+            id="auth-back-btn"
+          >
+            <ArrowLeft size={14} aria-hidden="true" />
+            Back to home
+          </button>
+        )}
         
         {/* App Splash Frame */}
         <div className="text-center mb-8" id="auth-header-logo-section">
