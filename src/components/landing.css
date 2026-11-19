@@ -104,7 +104,7 @@
 .lp-r-left { color: #2f7a4f; }
 .lp-r-foot { text-align: center; margin-top: 16px; color: #6b7686; font-size: 12.5px; }
 .lp-stamp {
-  position: absolute; right: -6px; bottom: 70px; z-index: 3;
+  position: absolute; right: -14px; top: 54px; z-index: 3;
   background: var(--note); color: var(--ink);
   font: 700 15px/1.15 var(--display); letter-spacing: -0.01em;
   padding: 12px 14px; border-radius: 12px; transform: rotate(-6deg);
@@ -209,7 +209,7 @@
   .lp-btn--sm { height: 38px; padding: 0 14px; font-size: 14px; }
   .lp-lede { font-size: 18px; }
   .lp-cta .lp-btn { flex: 1 1 100%; }
-  .lp-stamp { right: 0; }
+  .lp-stamp { right: -4px; }
   .lp-step { grid-template-columns: 52px 1fr; gap: 16px; }
   .lp-step h3 { font-size: 22px; }
 }

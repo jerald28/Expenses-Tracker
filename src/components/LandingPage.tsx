@@ -29,9 +29,9 @@ const RECEIPT_TOTAL = RECEIPT.reduce((s, [, v]) => s + v, 0);
 
 const SHOTS = [
   { id: '37400607', title: 'Jeep and Grab rides', sub: 'Commute', amount: '₱1,260', alt: 'A colorful jeepney on a sunny street in the Philippines' },
-  { id: '6747870', title: 'The daily kape', sub: 'Coffee', amount: '₱2,400', alt: 'A cup of latte with latte art on a saucer' },
-  { id: '20089299', title: 'Lunch and merienda', sub: 'Food', amount: '₱3,150', alt: 'A table full of Filipino dishes' },
-  { id: '4177709', title: 'The weekly grocery run', sub: 'Groceries', amount: '₱4,800', alt: 'A shopper with a basket in a grocery aisle' },
+  { id: '33180381', title: 'The daily iced kape', sub: 'Coffee', amount: '₱2,400', alt: 'A young woman with an iced coffee checking her phone outdoors' },
+  { id: '37160272', title: 'Merienda sa kanto', sub: 'Food', amount: '₱1,850', alt: 'A street food vendor in Manila grilling skewers' },
+  { id: '37449316', title: 'The weekly palengke run', sub: 'Groceries', amount: '₱4,800', alt: 'Tropical fruits on display at a market stall in the Philippines' },
   { id: '2604843', title: 'Bills and everything else', sub: 'Bills', amount: '₱5,600', alt: 'Busy Manila street on a rainy day' },
 ];
 
@@ -51,18 +51,18 @@ export default function LandingPage({ onAuth }: LandingPageProps) {
         tl.from('.lp-h1 .ln > span', { yPercent: 110, duration: 1.1, stagger: 0.09 })
           .from('.lp-lede, .lp-cta, .lp-note', { autoAlpha: 0, y: 18, duration: 0.8, stagger: 0.08 }, '-=0.7')
           .from('.lp-slot', { autoAlpha: 0, y: -12, duration: 0.5 }, '-=0.9')
-          .from('.lp-receipt', { yPercent: -101, duration: 1.6, ease: 'steps(14)' }, '-=0.4')
-          .from('.lp-receipt .lp-r-row', { autoAlpha: 0, duration: 0.01, stagger: 0.1 }, '<0.25');
+          .from('.lp-receipt', { yPercent: -101, duration: 1.2, ease: 'steps(12)' }, '-=0.6')
+          .from('.lp-receipt .lp-r-row', { autoAlpha: 0, duration: 0.01, stagger: 0.08 }, '<0.2');
 
         const counter = { v: 0 };
         tl.to(counter, {
           v: RECEIPT_TOTAL,
-          duration: 1.1,
+          duration: 0.8,
           ease: 'power2.out',
           onUpdate: () => {
             if (totalRef.current) totalRef.current.textContent = peso(Math.round(counter.v));
           },
-        }, '-=0.6')
+        }, '-=0.5')
           .from('.lp-stamp', { autoAlpha: 0, scale: 1.6, rotate: -18, duration: 0.45, ease: 'back.out(2.2)' }, '-=0.2');
 
         // Final CTA background drifts slightly as it scrolls past
@@ -242,10 +242,10 @@ export default function LandingPage({ onAuth }: LandingPageProps) {
           <div className="lp-wrap lp-feat-grid">
             <div className="lp-feat-photo">
               <img
-                src={px('13929418', 1200)}
-                srcSet={srcSet('13929418', [600, 1000, 1400])}
+                src={px('37078370', 1200)}
+                srcSet={srcSet('37078370', [600, 1000, 1400])}
                 sizes="(max-width: 900px) 100vw, 55vw"
-                alt="A woman checking her phone"
+                alt="A Filipina woman checking her phone at a table"
                 loading="lazy"
                 decoding="async"
               />
