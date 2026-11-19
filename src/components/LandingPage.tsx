@@ -2,8 +2,8 @@ import { useLayoutEffect, useRef, useState, useCallback } from 'react';
 import gsap from 'gsap';
 import { Draggable } from 'gsap/Draggable';
 import { InertiaPlugin } from 'gsap/InertiaPlugin';
-import './landing.css';
 import InstallAppButton from './InstallApp.tsx';
+import { FAQ } from '../content/faq.ts';
 
 gsap.registerPlugin(Draggable, InertiaPlugin);
 
@@ -42,7 +42,7 @@ const SHOTS = [
 const peso = (n: number) => '₱' + n.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 export default function LandingPage({ onAuth }: LandingPageProps) {
-  const root = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
   const totalRef = useRef<HTMLSpanElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -135,16 +135,23 @@ export default function LandingPage({ onAuth }: LandingPageProps) {
   };
 
   useLayoutEffect(() => {
+    // When the page was pre-rendered, its text is already on screen: skip the text entrance and
+    // only print the receipt (kept blank by the html.ssr-pending class until now).
+    const root = document.documentElement;
+    const fromStatic = root.classList.contains('ssr-pending');
+
     const ctx = gsap.context(() => {
       const mm = gsap.matchMedia();
 
       mm.add('(prefers-reduced-motion: no-preference)', () => {
         // Hero: headline rises out of its lines, then the receipt prints
         const tl = gsap.timeline({ defaults: { ease: 'power4.out' } });
-        tl.from('.lp-h1 .ln > span', { yPercent: 110, duration: 1.1, stagger: 0.09 })
-          .from('.lp-lede, .lp-hero .lp-cta, .lp-note, .lp-install-feature', { autoAlpha: 0, y: 18, duration: 0.8, stagger: 0.08 }, '-=0.7')
-          .from('.lp-slot', { autoAlpha: 0, y: -12, duration: 0.5 }, '-=0.9')
-          .from('.lp-receipt', { yPercent: -101, duration: 1.2, ease: 'steps(12)' }, '-=0.6')
+        if (!fromStatic) {
+          tl.from('.lp-h1 .ln > span', { yPercent: 110, duration: 1.1, stagger: 0.09 })
+            .from('.lp-lede, .lp-hero .lp-cta, .lp-note, .lp-install-feature', { autoAlpha: 0, y: 18, duration: 0.8, stagger: 0.08 }, '-=0.7')
+            .from('.lp-slot', { autoAlpha: 0, y: -12, duration: 0.5 }, '-=0.9');
+        }
+        tl.from('.lp-receipt', { yPercent: -101, duration: 1.2, ease: 'steps(12)' }, fromStatic ? 0.15 : '-=0.6')
           .from('.lp-receipt .lp-r-row', { autoAlpha: 0, duration: 0.01, stagger: 0.08 }, '<0.2');
 
         const counter = { v: 0 };
@@ -161,14 +168,15 @@ export default function LandingPage({ onAuth }: LandingPageProps) {
 
       });
 
+      root.classList.remove('ssr-pending');
       return () => mm.revert();
-    }, root);
+    }, rootRef);
 
     return () => ctx.revert();
   }, []);
 
   return (
-    <div className="lp" ref={root} id="landing-root">
+    <div className="lp" ref={rootRef} id="landing-root">
       <header className="lp-nav">
         <nav className="lp-wrap" aria-label="Main">
           <a className="lp-brand" href="#top">
@@ -335,6 +343,26 @@ export default function LandingPage({ onAuth }: LandingPageProps) {
           </div>
         </section>
 
+        <section className="lp-faq" aria-labelledby="faq-title">
+          <div className="lp-wrap lp-faq-grid">
+            <div>
+              <h2 className="lp-h2" id="faq-title">Questions, answered.</h2>
+              <p className="lp-faq-lede">Pesus is a free expense tracker for everyday spending in the Philippines.</p>
+            </div>
+            <div className="lp-faq-list">
+              {FAQ.map((item, i) => (
+                <details key={item.q} className="lp-faq-item" open={i === 0}>
+                  <summary>
+                    <h3>{item.q}</h3>
+                    <span className="lp-faq-icon" aria-hidden="true" />
+                  </summary>
+                  <p>{item.a}</p>
+                </details>
+              ))}
+            </div>
+          </div>
+        </section>
+
         <section className="lp-final" aria-labelledby="final-title">
           <div className="lp-wrap">
             <div className="lp-final-panel">
@@ -392,6 +420,7 @@ export default function LandingPage({ onAuth }: LandingPageProps) {
                 <a href="#gallery-title">Where it goes</a>
                 <a href="#steps-title">How it works</a>
                 <a href="#features-title">Features</a>
+                <a href="#faq-title">FAQ</a>
               </div>
             </nav>
             <a className="lp-dev-card" href={PORTFOLIO_URL} target="_blank" rel="noreferrer">

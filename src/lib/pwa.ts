@@ -42,13 +42,14 @@ export type InstallResult = 'installed' | 'dismissed' | 'ios' | 'manual';
 
 export function useInstallApp() {
   const [, force] = useState(0);
-  const [installed, setInstalled] = useState(isStandalone());
+  const [installed, setInstalled] = useState(false);
 
   useEffect(() => {
     const update = () => {
       force((n) => n + 1);
       setInstalled(isStandalone());
     };
+    update();
     listeners.add(update);
     const mq = window.matchMedia('(display-mode: standalone)');
     mq.addEventListener?.('change', update);

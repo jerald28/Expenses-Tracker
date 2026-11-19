@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { signInWithGoogle } from '../lib/firebase.ts';
-import './landing.css';
 
 interface AuthPageProps {
   theme: 'light' | 'dark';
