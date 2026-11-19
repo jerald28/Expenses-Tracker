@@ -137,14 +137,14 @@ export default function Settings({
           Settings
         </h1>
         <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-          Customize currency, backing up data, and appearance.
+          Your account, budget, appearance and backups.
         </p>
       </div>
 
       {/* Cloud Sync Auth Section with Google Account */}
-      <div className="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-gray-100 dark:border-neutral-850 p-4 space-y-4" id="firebase-cloud-sync-container">
+      <div className="bg-white dark:bg-[#15203a] rounded-2xl border border-gray-100 dark:border-neutral-850 p-4 space-y-4" id="firebase-cloud-sync-container">
         <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-widest flex items-center gap-2">
-          <Cloud size={14} className="text-blue-500" /> Sync & Cloud Backup
+          <Cloud size={14} className="text-blue-500" /> Account
         </h3>
         {authError && (
           <div className="p-3 bg-red-500/10 border border-red-500/15 rounded-xl text-xs font-semibold text-red-650 dark:text-red-400">
@@ -182,7 +182,7 @@ export default function Settings({
                 </div>
               </div>
               <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/10 uppercase tracking-wider">
-                Sync Active
+                Synced
               </span>
             </div>
             
@@ -196,7 +196,7 @@ export default function Settings({
               type="button"
               className="w-full py-2.5 bg-neutral-100 dark:bg-neutral-900 hover:bg-neutral-200 dark:hover:bg-neutral-800 text-neutral-800 dark:text-neutral-200 text-xs font-bold rounded-xl transition-all cursor-pointer active:scale-95"
             >
-              Sign Out Account
+              Sign out
             </button>
           </div>
         ) : (
@@ -223,9 +223,9 @@ export default function Settings({
 
 
       {/* 1. Theme Configuration section */}
-      <div className="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-gray-100 dark:border-neutral-850 p-4 space-y-4">
+      <div className="bg-white dark:bg-[#15203a] rounded-2xl border border-gray-100 dark:border-neutral-850 p-4 space-y-4">
         <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-widest">
-          App Appearance
+          Appearance
         </h3>
         
         <div className="flex items-center justify-between">
@@ -235,10 +235,10 @@ export default function Settings({
             </div>
             <div>
               <span className="font-semibold text-sm text-neutral-900 dark:text-white block">
-                {theme === 'light' ? 'Light Theme' : 'Dark Theme'}
+                {theme === 'light' ? 'Light mode' : 'Dark mode'}
               </span>
               <span className="text-[10px] text-neutral-400 dark:text-neutral-500 font-mono">
-                Cupertino system appearance
+                Switch between light and dark
               </span>
             </div>
           </div>
@@ -247,7 +247,7 @@ export default function Settings({
           <button
             onClick={onToggleTheme}
             className={`w-14 h-8 rounded-full p-1 transition-colors relative flex items-center ${
-              theme === 'dark' ? 'bg-[#34C759]' : 'bg-neutral-200 dark:bg-neutral-800'
+              theme === 'dark' ? 'bg-[#2f9e5b]' : 'bg-neutral-200 dark:bg-neutral-800'
             }`}
           >
             <div 
@@ -260,19 +260,19 @@ export default function Settings({
       </div>
 
       {/* 2. Budget and regional currency selector */}
-      <div className="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-gray-100 dark:border-neutral-850 p-4 space-y-4">
+      <div className="bg-white dark:bg-[#15203a] rounded-2xl border border-gray-100 dark:border-neutral-850 p-4 space-y-4">
         <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-widest">
-          Preferences & Budgeting
+          Budget and currency
         </h3>
 
         {/* Currency selection row */}
         <div className="space-y-1.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-gray-100 dark:border-neutral-800">
           <div>
             <span className="font-semibold text-sm text-neutral-900 dark:text-white block">
-              Active Currency
+              Currency
             </span>
             <span className="text-[10px] text-neutral-400 font-mono">
-              Changes core layout symbols
+              Used for every amount in the app
             </span>
           </div>
 
@@ -293,10 +293,10 @@ export default function Settings({
         <form onSubmit={handleSaveBudget} className="space-y-3 pt-1">
           <div>
             <span className="font-semibold text-sm text-neutral-900 dark:text-white block">
-              Default Monthly Budget
+              Monthly budget
             </span>
             <span className="text-[10px] text-neutral-400 font-mono block mb-1.5">
-              Warning alarms show upon nearing capacity
+              Shown as the progress bar on your dashboard
             </span>
           </div>
 
@@ -324,13 +324,13 @@ export default function Settings({
       </div>
 
       {/* 3. Offline backup management */}
-      <div className="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-gray-100 dark:border-neutral-850 p-4 space-y-4">
+      <div className="bg-white dark:bg-[#15203a] rounded-2xl border border-gray-100 dark:border-neutral-850 p-4 space-y-4">
         <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-widest">
-          Offline Backup & Privacy
+          Backup
         </h3>
 
         <p className="text-xs text-neutral-400">
-          This app runs fully in your web browser. All budget metrics, expense ledgers, and configurations are securely stored within client-side local cache storage. No personal data ever leaks to the internet.
+          Your expenses are saved to your account automatically. You can also download a copy as a file and restore it later.
         </p>
 
         {/* Real backup results indicator */}
@@ -351,7 +351,7 @@ export default function Settings({
             type="button"
             className="p-3 bg-white dark:bg-neutral-900 hover:bg-blue-50 dark:hover:bg-blue-950/30 hover:text-blue-600 dark:hover:text-blue-400 border border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer"
           >
-            <Download size={14} /> Download JSON
+            <Download size={14} /> Download backup
           </button>
 
           {/* Restore Button (Triggers Hidden File Input) */}
@@ -360,7 +360,7 @@ export default function Settings({
             type="button"
             className="p-3 bg-white dark:bg-neutral-900 hover:bg-blue-50 dark:hover:bg-blue-950/30 hover:text-blue-600 dark:hover:text-blue-400 border border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer"
           >
-            <Upload size={14} /> Restore JSON
+            <Upload size={14} /> Restore backup
           </button>
 
           <input
@@ -379,7 +379,7 @@ export default function Settings({
             type="button"
             className="w-full p-3 bg-red-500/10 hover:bg-red-500/15 border border-red-500/10 text-red-650 dark:text-red-400 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer"
           >
-            <RotateCcw size={14} /> Clear All App Data
+            <RotateCcw size={14} /> Delete all expenses
           </button>
         </div>
       </div>
@@ -392,7 +392,7 @@ export default function Settings({
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white dark:bg-[#1C1C1E] rounded-3xl border border-neutral-200/10 dark:border-neutral-800/80 shadow-2xl p-6 max-w-sm w-full space-y-5 text-center"
+              className="bg-white dark:bg-[#15203a] rounded-3xl border border-neutral-200/10 dark:border-neutral-800/80 shadow-2xl p-6 max-w-sm w-full space-y-5 text-center"
               id="clear-confirm-modal-box"
             >
               {/* Warning Icon Banner */}
@@ -405,10 +405,10 @@ export default function Settings({
               {/* Title and Descriptions */}
               <div className="space-y-1.5" id="modal-text-descriptor">
                 <h3 className="text-base font-bold text-neutral-900 dark:text-white">
-                  Confirm Data Clearance
+                  Delete all expenses?
                 </h3>
                 <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
-                  Are you absolutely sure you want to clear all your ledger transaction balances, customized configurations, and budget limit history?
+                  This permanently deletes every expense and resets your budget and settings. It can't be undone.
                 </p>
                 <div className="p-2 bg-red-500/5 text-red-650 dark:text-red-400 text-[10px] font-bold rounded-lg border border-red-500/10 inline-block uppercase tracking-wider">
                   ⚠️ This action is irreversible
@@ -458,7 +458,7 @@ export default function Settings({
                     type="submit"
                     className="flex-grow py-3 bg-red-500 hover:bg-red-600 text-white text-xs font-bold rounded-xl shadow-lg shadow-red-500/20 hover:shadow-red-500/30 transition-all cursor-pointer"
                   >
-                    Clear All
+                    Delete all expenses
                   </button>
                 </div>
               </form>

@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { 
   LayoutDashboard, 
   Plus, 
@@ -12,26 +11,35 @@ import { SYSTEM_CATEGORIES } from './constants.ts';
 
 // Firebase imports
 import { onAuthStateChanged, type User } from 'firebase/auth';
-import { 
-  auth, 
-  signInWithGoogle, 
-  logoutUser, 
-  syncUserSettings, 
-  updateDbSettings, 
-  fetchUserExpensesFromDb, 
-  saveUserExpenseToDb, 
-  deleteUserExpenseFromDb, 
-  mergeLocalExpensesToDb,
-  clearAllUserExpensesFromDb 
-} from './lib/firebase.ts';
+import { auth, signInWithGoogle, logoutUser } from './lib/firebase.ts';
 
-// Component imports
-import Dashboard from './components/Dashboard.tsx';
-import ExpenseList from './components/ExpenseList.tsx';
-import ExpenseFormPage from './components/ExpenseFormPage.tsx';
-import Settings from './components/Settings.tsx';
-import AuthPage from './components/AuthPage.tsx';
-import LandingPage from './components/LandingPage.tsx';
+// Firestore is loaded on demand, only once someone is signed in
+const loadDb = () => import('./lib/db.ts');
+const syncUserSettings: typeof import('./lib/db.ts').syncUserSettings = async (...a) => (await loadDb()).syncUserSettings(...a);
+const updateDbSettings: typeof import('./lib/db.ts').updateDbSettings = async (...a) => (await loadDb()).updateDbSettings(...a);
+const fetchUserExpensesFromDb: typeof import('./lib/db.ts').fetchUserExpensesFromDb = async (...a) => (await loadDb()).fetchUserExpensesFromDb(...a);
+const saveUserExpenseToDb: typeof import('./lib/db.ts').saveUserExpenseToDb = async (...a) => (await loadDb()).saveUserExpenseToDb(...a);
+const deleteUserExpenseFromDb: typeof import('./lib/db.ts').deleteUserExpenseFromDb = async (...a) => (await loadDb()).deleteUserExpenseFromDb(...a);
+const mergeLocalExpensesToDb: typeof import('./lib/db.ts').mergeLocalExpensesToDb = async (...a) => (await loadDb()).mergeLocalExpensesToDb(...a);
+const clearAllUserExpensesFromDb: typeof import('./lib/db.ts').clearAllUserExpensesFromDb = async (...a) => (await loadDb()).clearAllUserExpensesFromDb(...a);
+
+// Screens are split into their own chunks so each visitor only downloads what they see
+const Dashboard = lazy(() => import('./components/Dashboard.tsx'));
+const ExpenseList = lazy(() => import('./components/ExpenseList.tsx'));
+const ExpenseFormPage = lazy(() => import('./components/ExpenseFormPage.tsx'));
+const Settings = lazy(() => import('./components/Settings.tsx'));
+const AuthPage = lazy(() => import('./components/AuthPage.tsx'));
+const LandingPage = lazy(() => import('./components/LandingPage.tsx'));
+
+// Remembers on this device whether someone was signed in, so first-time
+// visitors see the landing page right away instead of a loading spinner.
+const SIGNED_IN_HINT = 'pesus_signed_in';
+const readHint = () => {
+  try { return localStorage.getItem(SIGNED_IN_HINT) === '1'; } catch { return false; }
+};
+const writeHint = (v: boolean) => {
+  try { v ? localStorage.setItem(SIGNED_IN_HINT, '1') : localStorage.removeItem(SIGNED_IN_HINT); } catch { /* ignore */ }
+};
 
 // Empty seed records for brand new user state
 const SEED_EXPENSES: Expense[] = [];
@@ -78,33 +86,11 @@ export default function App() {
   const [authLoading, setAuthLoading] = useState(true);
   const [authMode, setAuthMode] = useState<'signin' | 'signup' | null>(null);
 
-  // Load state from traditional Express server (for guest/unauthenticated flow)
-  const loadStateFromServer = async () => {
-    try {
-      setSyncStatus('syncing');
-      const res = await fetch('/api/state');
-      if (res.ok) {
-        const remoteState = await res.json();
-        if (remoteState.expenses) {
-          setExpenses(remoteState.expenses);
-          if (remoteState.budget) setBudget(remoteState.budget);
-          if (remoteState.currency) setCurrencySymbol(remoteState.currency);
-          if (remoteState.theme) setTheme(remoteState.theme);
-          setSyncStatus('synced');
-          return;
-        }
-      }
-      setSyncStatus('offline');
-    } catch (err) {
-      console.warn('Express server load state failed. Using local storage layout.');
-      setSyncStatus('offline');
-    }
-  };
-
   // Listen to Firebase Auth transactions and sync profile state
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
+      writeHint(!!user);
       if (user) {
         try {
           setSyncStatus('syncing');
@@ -146,9 +132,6 @@ export default function App() {
         localStorage.removeItem('ios_budget');
         localStorage.removeItem('ios_currency');
         localStorage.removeItem('ios_theme');
-
-        // Run standard unauthenticated backend loader
-        await loadStateFromServer();
       }
       setAuthLoading(false);
     });
@@ -413,13 +396,19 @@ export default function App() {
     setActiveTab('add');
   };
 
-  // 1. Loading screen during Firebase auth initial handshake
-  if (authLoading) {
+  const screenFallback = (
+    <div className="min-h-[40vh] flex items-center justify-center" aria-busy="true">
+      <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+
+  // 1. Loading screen during Firebase auth initial handshake (only for returning signed-in users)
+  if (authLoading && readHint()) {
     return (
-      <div className={`${theme} min-h-screen bg-[#F4F4F7] dark:bg-[#0A0A0C] flex flex-col items-center justify-center p-4`} id="auth-loading-frame">
+      <div className={`${theme} min-h-screen bg-[#e6ebef] dark:bg-[#0b1428] flex flex-col items-center justify-center p-4`} id="auth-loading-frame">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-3 border-blue-500 border-t-transparent rounded-full animate-spin" id="root-loading-spinner" />
-          <span className="text-xs font-bold text-neutral-450 dark:text-neutral-500 uppercase tracking-widest animate-pulse">Initializing ...</span>
+          <div className="w-9 h-9 rounded-full bg-[#f5b700] text-[#14213d] grid place-items-center font-bold animate-pulse" id="root-loading-spinner">₱</div>
+          <span className="text-sm font-medium text-neutral-500 dark:text-neutral-400">Loading your expenses…</span>
         </div>
       </div>
     );
@@ -429,24 +418,28 @@ export default function App() {
   if (!currentUser) {
     if (!authMode) {
       return (
-        <LandingPage
-          theme={theme}
-          onAuth={(mode) => {
-            setAuthMode(mode);
-            window.scrollTo(0, 0);
-          }}
-        />
+        <Suspense fallback={<div className="min-h-screen bg-[#e6ebef]" />}>
+          <LandingPage
+            theme={theme}
+            onAuth={(mode) => {
+              setAuthMode(mode);
+              window.scrollTo(0, 0);
+            }}
+          />
+        </Suspense>
       );
     }
     return (
       <div className={theme}>
-        <AuthPage theme={theme} initialMode={authMode} onBack={() => setAuthMode(null)} />
+        <Suspense fallback={<div className="min-h-screen bg-[#e6ebef]" />}>
+          <AuthPage theme={theme} initialMode={authMode} onBack={() => setAuthMode(null)} />
+        </Suspense>
       </div>
     );
   }
 
   return (
-    <div className={`${theme} min-h-screen bg-[#F4F4F7] dark:bg-[#0A0A0C] font-sans antialiased text-neutral-950 dark:text-white transition-colors flex flex-col justify-between relative`} id="applet-primary-container">
+    <div className={`${theme} min-h-screen bg-[#e6ebef] dark:bg-[#0b1428] font-sans antialiased text-neutral-950 dark:text-white transition-colors flex flex-col justify-between relative`} id="applet-primary-container">
       
       {/* Subtle Floating DB Connection Status Indicator (No layout footprint) */}
       <div className="absolute top-4 right-4 z-50 flex items-center gap-1.5 pointer-events-none select-none">
@@ -466,6 +459,7 @@ export default function App() {
         className="flex-grow w-full max-w-2xl mx-auto px-4 md:px-6 pt-8 pb-28 min-h-[600px] transition-colors"
         id="iphone-screen-contents"
       >
+        <Suspense fallback={screenFallback}>
         {activeTab === 'dashboard' && (
           <Dashboard 
             expenses={expenses}
@@ -518,11 +512,12 @@ export default function App() {
             onSignOut={async () => { await logoutUser(); setAuthMode(null); }}
           />
         )}
+        </Suspense>
       </main>
 
       {/* Modern Sticky Bottom Tab Bar */}
       <div className="fixed bottom-4 inset-x-4 max-w-lg mx-auto z-40" id="ios-bottom-tabbar">
-        <div className="bg-white/94 dark:bg-[#151518]/94 backdrop-blur-md rounded-2xl border border-neutral-200/20 dark:border-neutral-800/80 shadow-lg px-5 py-2.5 flex justify-between items-center transition-colors">
+        <div className="bg-white/95 dark:bg-[#101a33]/95 backdrop-blur-md rounded-full border border-neutral-200/70 dark:border-neutral-800/80 shadow-[0_18px_40px_-20px_rgba(20,33,61,0.45)] px-6 py-2.5 flex justify-between items-center transition-colors">
           {/* Summary Tab */}
           <button
             onClick={() => setActiveTab('dashboard')}
@@ -531,9 +526,9 @@ export default function App() {
             }`}
           >
             <LayoutDashboard size={18} className="group-hover:scale-110 transition-transform duration-200" />
-            <span className="text-[9px] font-bold tracking-tight">Summary</span>
+            <span className="text-[11px] font-semibold tracking-tight">Summary</span>
             {activeTab === 'dashboard' && (
-              <motion.div layoutId="tab-indicator" className="absolute -bottom-2 w-6 h-0.5 bg-blue-500 rounded-full" />
+              <div className="absolute -bottom-2 w-6 h-0.5 bg-blue-500 rounded-full" />
             )}
           </button>
 
@@ -545,9 +540,9 @@ export default function App() {
             }`}
           >
             <ClipboardList size={18} className="group-hover:scale-110 transition-transform duration-200" />
-            <span className="text-[9px] font-bold tracking-tight">Ledger</span>
+            <span className="text-[11px] font-semibold tracking-tight">Ledger</span>
             {activeTab === 'history' && (
-              <motion.div layoutId="tab-indicator" className="absolute -bottom-2 w-6 h-0.5 bg-blue-500 rounded-full" />
+              <div className="absolute -bottom-2 w-6 h-0.5 bg-blue-500 rounded-full" />
             )}
           </button>
 
@@ -563,8 +558,9 @@ export default function App() {
                   setActiveTab('add');
                 }
               }}
-              className={`w-11 h-11 rounded-full text-white flex items-center justify-center shadow-md hover:shadow-lg transition-all cursor-pointer border-3 border-[#F4F4F7] dark:border-[#0A0A0C] active:scale-95 ${
-                activeTab === 'add' ? 'bg-blue-600 ring-4 ring-blue-500/20' : 'bg-blue-500 hover:bg-blue-600'
+              aria-label={activeTab === 'add' ? 'Close' : 'Add expense'}
+              className={`w-14 h-14 rounded-full text-[#14213d] flex items-center justify-center shadow-[0_12px_24px_-10px_rgba(20,33,61,0.6)] transition-all cursor-pointer border-4 border-[#e6ebef] dark:border-[#0b1428] active:scale-95 ${
+                activeTab === 'add' ? 'bg-[#ffd34d]' : 'bg-[#f5b700] hover:bg-[#ffc933]'
               }`}
               title={activeTab === 'add' ? 'Cancel / Go Back' : 'Add expense'}
             >
@@ -582,9 +578,9 @@ export default function App() {
             }`}
           >
             <SettingsIcon size={18} className="group-hover:rotate-45 transition-transform duration-350" />
-            <span className="text-[9px] font-bold tracking-tight">Settings</span>
+            <span className="text-[11px] font-semibold tracking-tight">Settings</span>
             {activeTab === 'settings' && (
-              <motion.div layoutId="tab-indicator" className="absolute -bottom-2 w-6 h-0.5 bg-blue-500 rounded-full" />
+              <div className="absolute -bottom-2 w-6 h-0.5 bg-blue-500 rounded-full" />
             )}
           </button>
         </div>

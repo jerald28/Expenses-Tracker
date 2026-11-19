@@ -1,18 +1,11 @@
 import { useLayoutEffect, useRef, useState, useCallback } from 'react';
 import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Draggable } from 'gsap/Draggable';
 import { InertiaPlugin } from 'gsap/InertiaPlugin';
-import '@fontsource/familjen-grotesk/400.css';
-import '@fontsource/familjen-grotesk/500.css';
-import '@fontsource/familjen-grotesk/600.css';
-import '@fontsource/familjen-grotesk/700.css';
-import '@fontsource/ibm-plex-mono/400.css';
-import '@fontsource/ibm-plex-mono/600.css';
 import './landing.css';
 import InstallAppButton from './InstallApp.tsx';
 
-gsap.registerPlugin(ScrollTrigger, Draggable, InertiaPlugin);
+gsap.registerPlugin(Draggable, InertiaPlugin);
 
 const PORTFOLIO_URL = 'https://jeraldesguerra.vercel.app/';
 
@@ -149,7 +142,7 @@ export default function LandingPage({ onAuth }: LandingPageProps) {
         // Hero: headline rises out of its lines, then the receipt prints
         const tl = gsap.timeline({ defaults: { ease: 'power4.out' } });
         tl.from('.lp-h1 .ln > span', { yPercent: 110, duration: 1.1, stagger: 0.09 })
-          .from('.lp-lede, .lp-cta, .lp-note', { autoAlpha: 0, y: 18, duration: 0.8, stagger: 0.08 }, '-=0.7')
+          .from('.lp-lede, .lp-hero .lp-cta, .lp-note, .lp-install-feature', { autoAlpha: 0, y: 18, duration: 0.8, stagger: 0.08 }, '-=0.7')
           .from('.lp-slot', { autoAlpha: 0, y: -12, duration: 0.5 }, '-=0.9')
           .from('.lp-receipt', { yPercent: -101, duration: 1.2, ease: 'steps(12)' }, '-=0.6')
           .from('.lp-receipt .lp-r-row', { autoAlpha: 0, duration: 0.01, stagger: 0.08 }, '<0.2');
@@ -171,13 +164,7 @@ export default function LandingPage({ onAuth }: LandingPageProps) {
       return () => mm.revert();
     }, root);
 
-    // Recalculate pin distances once photos have loaded
-    const refresh = () => ScrollTrigger.refresh();
-    window.addEventListener('load', refresh);
-    return () => {
-      window.removeEventListener('load', refresh);
-      ctx.revert();
-    };
+    return () => ctx.revert();
   }, []);
 
   return (
@@ -211,7 +198,7 @@ export default function LandingPage({ onAuth }: LandingPageProps) {
                 <button type="button" className="lp-btn lp-btn--ghost" onClick={() => onAuth('signin')}>Sign in</button>
               </div>
               <p className="lp-note">Uses your Google account. No new password to remember.</p>
-              <InstallAppButton label="Install the app on your phone" />
+              <InstallAppButton label="Install the app on your phone" sub="Free. Opens like a regular app, no app store needed." />
             </div>
 
             <div className="lp-printer" aria-label="Example receipt of a day's spending">
@@ -414,7 +401,7 @@ export default function LandingPage({ onAuth }: LandingPageProps) {
               <span className="lp-dev-cta">View portfolio</span>
             </a>
           </div>
-          <div className="lp-foot-word" aria-hidden="true"><span>pesus</span></div>
+          <div className="lp-foot-word" aria-hidden="true"><span data-word="pesus" /></div>
           <div className="lp-foot-bottom">
             <span>© {new Date().getFullYear()} Pesus</span>
             <span>Photos from <a href="https://www.pexels.com" target="_blank" rel="noreferrer">Pexels</a></span>

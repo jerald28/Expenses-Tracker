@@ -2,6 +2,52 @@
 
 @variant dark (&:where(.dark, .dark *));
 
+/* Pesus brand tokens: palette drawn from Philippine peso notes.
+   Remapping Tailwind's blue/neutral/gray scales restyles the whole app consistently. */
+@theme {
+  --font-sans: 'Familjen Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  --color-blue-50: #eef2f8;
+  --color-blue-100: #dde5f1;
+  --color-blue-400: #6f8fc2;
+  --color-blue-500: #14213d;
+  --color-blue-600: #2b3a5c;
+  --color-blue-950: #0f1830;
+
+  --color-neutral-50: #f4f6f8;
+  --color-neutral-100: #e9edf1;
+  --color-neutral-200: #d5dce4;
+  --color-neutral-300: #b4bfcc;
+  --color-neutral-400: #8390a3;
+  --color-neutral-500: #5a6a7e;
+  --color-neutral-600: #45546a;
+  --color-neutral-700: #334158;
+  --color-neutral-800: #22304b;
+  --color-neutral-900: #172340;
+  --color-neutral-950: #0f1830;
+
+  --color-gray-50: #f4f6f8;
+  --color-gray-100: #e9edf1;
+  --color-gray-200: #d5dce4;
+  --color-gray-400: #8390a3;
+  --color-gray-500: #5a6a7e;
+  --color-gray-900: #14213d;
+
+  --color-note: #f5b700;
+  --color-ink: #14213d;
+  --color-polymer: #e6ebef;
+}
+
+/* In dark mode the navy accent would vanish against the background, so it lifts to a readable blue */
+.dark {
+  --color-blue-500: #7d9bd4;
+  --color-blue-600: #9bb3e0;
+  --color-blue-400: #9bb3e0;
+}
+
+body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+
 /* Hide scrollbar for Chrome, Safari and Opera */
 .scrollbar-none::-webkit-scrollbar {
   display: none !important;

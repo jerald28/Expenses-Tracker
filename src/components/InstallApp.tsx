@@ -18,9 +18,18 @@ const ShareIcon = () => (
 interface Props {
   className?: string;
   label?: string;
+  /** Optional second line; renders the highlighted card style */
+  sub?: string;
 }
 
-export default function InstallAppButton({ className = 'lp-btn lp-btn--ghost', label = 'Install the app' }: Props) {
+const PhoneIcon = () => (
+  <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+    <rect x="6.5" y="2.5" width="11" height="19" rx="2.5" fill="none" stroke="currentColor" strokeWidth="2" />
+    <path d="M12 7.5v7m0 0l-2.75-2.75M12 14.5l2.75-2.75" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+export default function InstallAppButton({ className = 'lp-btn lp-btn--ghost', label = 'Install the app', sub }: Props) {
   const { installed, install } = useInstallApp();
   const [sheet, setSheet] = useState<Sheet>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -46,10 +55,21 @@ export default function InstallAppButton({ className = 'lp-btn lp-btn--ghost', l
 
   return (
     <>
-      <button ref={openerRef} type="button" className={`${className} lp-install`} onClick={onClick}>
-        <DownloadIcon />
-        {label}
-      </button>
+      {sub ? (
+        <button ref={openerRef} type="button" className="lp-install-feature" onClick={onClick}>
+          <span className="lp-install-icon"><PhoneIcon /></span>
+          <span className="lp-install-text">
+            <b>{label}</b>
+            <small>{sub}</small>
+          </span>
+          <span className="lp-install-go" aria-hidden="true"><DownloadIcon /></span>
+        </button>
+      ) : (
+        <button ref={openerRef} type="button" className={`${className} lp-install`} onClick={onClick}>
+          <DownloadIcon />
+          {label}
+        </button>
+      )}
 
       {sheet && (
         <div className="lp-sheet-backdrop" onClick={() => setSheet(null)}>

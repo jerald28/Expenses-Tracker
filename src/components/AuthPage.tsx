@@ -1,16 +1,6 @@
-import React, { useState } from 'react';
-import { motion } from 'motion/react';
+import { useState } from 'react';
 import { signInWithGoogle } from '../lib/firebase.ts';
-import { 
-  Wallet,
-  AlertCircle,
-  Sparkles,
-  ArrowRight,
-  ArrowLeft,
-  ShieldCheck,
-  TrendingUp,
-  PieChart
-} from 'lucide-react';
+import './landing.css';
 
 interface AuthPageProps {
   theme: 'light' | 'dark';
@@ -18,162 +8,118 @@ interface AuthPageProps {
   onBack?: () => void;
 }
 
-export default function AuthPage({ theme, initialMode = 'signin', onBack }: AuthPageProps) {
-  const [activeMode, setActiveMode] = useState<'signin' | 'signup'>(initialMode);
-  const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+const FRIENDLY_ERRORS: Record<string, string> = {
+  'auth/unauthorized-domain': 'Sign-in is not enabled for this website yet. Please try again later.',
+  'auth/popup-blocked': 'Your browser blocked the sign-in window. Allow popups for this site and try again.',
+  'auth/network-request-failed': 'No internet connection. Check your connection and try again.',
+  'auth/too-many-requests': 'Too many attempts. Wait a moment and try again.',
+};
 
-  // Google sign in helper
-  const handleGoogleSignIn = async () => {
+const SAMPLE = [
+  ['Jeep fare', '₱13.00'],
+  ['Kape sa umaga', '₱120.00'],
+  ['Lunch sa carinderia', '₱95.00'],
+  ['Grab pauwi', '₱238.00'],
+];
+
+const GoogleLogo = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05" />
+    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335" />
+  </svg>
+);
+
+export default function AuthPage({ initialMode = 'signin', onBack }: AuthPageProps) {
+  const [mode, setMode] = useState<'signin' | 'signup'>(initialMode);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleGoogle = async () => {
     try {
       setLoading(true);
-      setErrorMessage(null);
+      setError(null);
       await signInWithGoogle();
     } catch (err: any) {
-      console.error('Google Sign In failed:', err);
-      const friendlyErrors: Record<string, string> = {
-        'auth/unauthorized-domain': 'Sign-in is not enabled for this website yet. Please try again later.',
-        'auth/popup-blocked': 'Your browser blocked the sign-in popup. Please allow popups for this site and try again.',
-        'auth/network-request-failed': 'Network error. Please check your connection and try again.',
-        'auth/too-many-requests': 'Too many attempts. Please wait a moment and try again.',
-      };
-      if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
-        setErrorMessage(friendlyErrors[err.code] || 'Google sign-in failed. Please try again.');
+      if (err?.code !== 'auth/popup-closed-by-user' && err?.code !== 'auth/cancelled-popup-request') {
+        setError(FRIENDLY_ERRORS[err?.code] || 'Google sign-in failed. Please try again.');
       }
     } finally {
       setLoading(false);
     }
   };
 
+  const isSignup = mode === 'signup';
+
   return (
-    <div className={`min-h-screen flex items-center justify-center p-4 bg-[#F4F4F7] dark:bg-[#0A0A0C] transition-colors`} id="auth-page-root">
-      <div className="w-full max-w-md" id="auth-card-container">
-        {onBack && (
-          <button
-            type="button"
-            onClick={onBack}
-            className="mb-6 inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-white transition-colors cursor-pointer"
-            id="auth-back-btn"
-          >
-            <ArrowLeft size={14} aria-hidden="true" />
-            Back to home
-          </button>
-        )}
-        
-        {/* App Splash Frame */}
-        <div className="text-center mb-8" id="auth-header-logo-section">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-blue-500 text-white shadow-lg shadow-blue-500/25 mb-4" id="app-logo-box">
-            <Wallet size={28} id="app-logo-vector" />
+    <div className="lp lp-auth">
+      <aside className="lp-auth-side" aria-hidden="true">
+        <div className="lp-auth-side-inner">
+          <span className="lp-brand lp-brand--light"><span className="lp-coin">₱</span>pesus</span>
+          <div className="lp-auth-receipt">
+            <div className="lp-receipt lp-receipt--static">
+              <div className="lp-r-head"><strong>PESUS</strong><span>Today</span></div>
+              {SAMPLE.map(([l, v]) => (
+                <div className="lp-r-row" key={l}><span>{l}</span><span>{v}</span></div>
+              ))}
+              <div className="lp-r-sep" />
+              <div className="lp-r-row lp-r-total"><span>Total today</span><span>₱466.00</span></div>
+              <div className="lp-r-row lp-r-left"><span>Left this month</span><span>₱6,534.00</span></div>
+            </div>
+            <div className="lp-stamp lp-stamp--static">Under<br />budget</div>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white flex items-center justify-center gap-1.5" id="app-title-header">
-            Pesus Tracker 
-          </h1>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1.5 max-w-xs mx-auto" id="app-subtitle-text">
-            Monitor and organize your daily, weekly, and monthly expenses in one place, helping you make smarter financial decisions.
-          </p>
+          <p className="lp-auth-quote">Every peso, accounted for.</p>
         </div>
+      </aside>
 
-        {/* Primary Interactive Auth Panel */}
-        <div className="bg-white dark:bg-[#1C1C1E] rounded-3xl border border-neutral-200/10 dark:border-neutral-800/80 shadow-2xl p-6 md:p-8 space-y-6 transition-colors" id="auth-form-card">
-          
-          {/* Action Modality Switcher */}
-          <div className="flex bg-neutral-100 dark:bg-neutral-900/60 p-1 rounded-xl" id="auth-tab-switch">
-            <button
-              id="auth-tab-signin"
-              onClick={() => {
-                setActiveMode('signin');
-                setErrorMessage(null);
-              }}
-              className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                activeMode === 'signin' 
-                  ? 'bg-white dark:bg-[#2C2C2E] text-blue-500 shadow-xs' 
-                  : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200'
-              }`}
-            >
-              Sign In
-            </button>
-            <button
-              id="auth-tab-signup"
-              onClick={() => {
-                setActiveMode('signup');
-                setErrorMessage(null);
-              }}
-              className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                activeMode === 'signup' 
-                  ? 'bg-white dark:bg-[#2C2C2E] text-blue-500 shadow-xs' 
-                  : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200'
-              }`}
-            >
-              Create Account
-            </button>
+      <main className="lp-auth-main">
+        <div className="lp-auth-card">
+          <div className="lp-auth-top">
+            {onBack ? (
+              <button type="button" className="lp-auth-back" onClick={onBack}>
+                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                Back to home
+              </button>
+            ) : <span />}
+            <span className="lp-brand lp-auth-brand-mobile"><span className="lp-coin">₱</span>pesus</span>
           </div>
 
-          {/* Value Propositions / Why Google Auth is safer */}
-          <div className="space-y-3 bg-neutral-50 dark:bg-neutral-900/40 p-4 rounded-2xl border border-neutral-200/20 dark:border-neutral-800/20" id="benefits-badge-section">
-            <div className="flex items-start gap-3">
-              <ShieldCheck size={16} className="text-emerald-500 shrink-0 mt-0.5" />
-              <div>
-                <h4 className="text-xs font-bold text-neutral-850 dark:text-white">One-click Password-less Linkage</h4>
-                <p className="text-[11px] text-neutral-400 dark:text-neutral-500 leading-normal mt-0.5">Secure verification without keeping sensitive key secrets inside third-party indices.</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <TrendingUp size={16} className="text-blue-500 shrink-0 mt-0.5" />
-              <div>
-                <h4 className="text-xs font-bold text-neutral-850 dark:text-white">Continuous Expense Backups</h4>
-                <p className="text-[11px] text-neutral-400 dark:text-neutral-500 leading-normal mt-0.5">Synchronizes every ledger balance instantly with Google Cloud's distributed ledger node.</p>
-              </div>
-            </div>
+          <div className="lp-auth-tabs" role="tablist" aria-label="Sign in or create account">
+            <button type="button" role="tab" aria-selected={!isSignup} className={!isSignup ? 'is-active' : ''} onClick={() => { setMode('signin'); setError(null); }}>Sign in</button>
+            <button type="button" role="tab" aria-selected={isSignup} className={isSignup ? 'is-active' : ''} onClick={() => { setMode('signup'); setError(null); }}>Create account</button>
           </div>
 
-          {/* Error Message banner */}
-          {errorMessage && (
-            <motion.div 
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl flex items-start gap-2.5"
-              id="auth-error-banner"
-            >
-              <AlertCircle size={16} className="text-red-500 shrink-0 mt-0.5" id="error-vector" />
-              <span className="text-xs font-medium text-red-650 dark:text-red-400 leading-normal" id="error-alert-msg">{errorMessage}</span>
-            </motion.div>
+          <h1 className="lp-auth-title">{isSignup ? 'Create your free account' : 'Welcome back'}</h1>
+          <p className="lp-auth-sub">
+            {isSignup
+              ? 'Sign up with your Google account. No new password to remember, and your expenses sync to all your devices.'
+              : 'Sign in with your Google account to see your expenses and budget.'}
+          </p>
+
+          {error && (
+            <div className="lp-auth-error" role="alert">{error}</div>
           )}
 
-          {/* Unified Social Google Auth CTA */}
-          <div className="pt-2" id="social-auth-providers">
-            <button
-              id="google-signin-btn"
-              onClick={handleGoogleSignIn}
-              disabled={loading}
-              className="w-full py-4.5 px-4 bg-neutral-900 hover:bg-neutral-850 dark:bg-white dark:hover:bg-neutral-100 text-white dark:text-neutral-950 text-xs font-bold rounded-2xl flex items-center justify-center gap-3 transition-all cursor-pointer shadow-lg shadow-blue-500/5 active:scale-97 disabled:opacity-50 disabled:pointer-events-none"
-            >
-              {loading ? (
-                <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" id="auth-loading-spinner" />
-              ) : (
-                <>
-                  <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" id="google-logo-icon">
-                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
-                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
-                  </svg>
-                  <span className="font-semibold text-xs py-0.5">
-                    {activeMode === 'signin' ? 'Continue with Google Account' : 'Sign Up with Google Account'}
-                  </span>
-                  <ArrowRight size={14} className="opacity-70" />
-                </>
-              )}
+          <button type="button" className="lp-google" onClick={handleGoogle} disabled={loading} aria-busy={loading}>
+            {loading ? <span className="lp-spinner" aria-hidden="true" /> : <GoogleLogo />}
+            <span>{loading ? 'Opening Google…' : isSignup ? 'Sign up with Google' : 'Continue with Google'}</span>
+          </button>
+
+          <ul className="lp-auth-points">
+            <li>Free to use, no card needed</li>
+            <li>Your data stays in your account</li>
+            <li>Works on your phone and laptop</li>
+          </ul>
+
+          <p className="lp-auth-switch">
+            {isSignup ? 'Already have an account? ' : 'New to Pesus? '}
+            <button type="button" onClick={() => { setMode(isSignup ? 'signin' : 'signup'); setError(null); }}>
+              {isSignup ? 'Sign in' : 'Create a free account'}
             </button>
-          </div>
-
+          </p>
         </div>
-
-        {/* Dynamic bottom secure notice badge */}
-        <div className="text-center mt-6 text-[10px] text-neutral-400 dark:text-neutral-550 font-medium" id="auth-secure-footnote">
-          🔒 Secured environment protected by Google Cloud Identity Services
-        </div>
-
-      </div>
+      </main>
     </div>
   );
 }

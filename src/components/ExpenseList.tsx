@@ -79,7 +79,7 @@ export default function ExpenseList({
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Search descriptions, stores, tags..."
-          className="w-full text-sm pl-10 pr-8 py-2.5 rounded-xl bg-white dark:bg-[#1C1C1E] border border-gray-100 dark:border-neutral-800 text-neutral-900 dark:text-white outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium shadow-xs"
+          className="w-full text-sm pl-10 pr-8 py-2.5 rounded-xl bg-white dark:bg-[#15203a] border border-gray-100 dark:border-neutral-800 text-neutral-900 dark:text-white outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium shadow-xs"
         />
         {searchTerm && (
           <button 
@@ -99,7 +99,7 @@ export default function ExpenseList({
             onClick={() => setTimePeriod(tab)}
             className={`flex-1 py-1.5 text-xs font-semibold capitalize rounded-lg transition-all ${
               timePeriod === tab
-                ? 'bg-white dark:bg-[#2C2C2E] text-neutral-900 dark:text-white shadow-xs'
+                ? 'bg-white dark:bg-[#1e2b4a] text-neutral-900 dark:text-white shadow-xs'
                 : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-250'
             }`}
           >
@@ -115,7 +115,7 @@ export default function ExpenseList({
           className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 active:scale-95 hover:brightness-105 cursor-pointer ${
             selectedCategory === 'all'
               ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 shadow-md'
-              : 'bg-white dark:bg-[#1C1C1E] text-neutral-600 dark:text-neutral-400 border border-gray-100 dark:border-neutral-800'
+              : 'bg-white dark:bg-[#15203a] text-neutral-600 dark:text-neutral-400 border border-gray-100 dark:border-neutral-800'
           }`}
         >
           All categories
@@ -127,7 +127,7 @@ export default function ExpenseList({
             className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap flex items-center gap-1.5 transition-all duration-200 active:scale-95 hover:brightness-105 cursor-pointer ${
               selectedCategory === cat.id
                 ? 'text-white shadow-md'
-                : 'bg-white dark:bg-[#1C1C1E] text-neutral-600 dark:text-neutral-400 border border-gray-100 dark:border-neutral-800'
+                : 'bg-white dark:bg-[#15203a] text-neutral-600 dark:text-neutral-400 border border-gray-100 dark:border-neutral-800'
             }`}
             style={{ 
               backgroundColor: selectedCategory === cat.id ? cat.color : undefined 
@@ -140,7 +140,7 @@ export default function ExpenseList({
       </div>
 
       {/* Subset Dashboard Counter (Group summary header) */}
-      <div className="p-4 bg-linear-to-r from-blue-500 to-indigo-600 rounded-2xl text-white shadow-xs flex items-center justify-between">
+      <div className="p-4 bg-[#14213d] dark:bg-[#15203a] dark:border dark:border-neutral-800 rounded-2xl text-white shadow-xs flex items-center justify-between">
         <div>
           <span className="text-[10px] uppercase font-bold tracking-wider opacity-80 font-mono block">
             Filtered Total ({filteredExpenses.length} items)
@@ -162,7 +162,7 @@ export default function ExpenseList({
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="text-center p-12 bg-white dark:bg-[#1C1C1E] rounded-2xl border border-gray-100 dark:border-neutral-800"
+              className="text-center p-12 bg-white dark:bg-[#15203a] rounded-2xl border border-gray-100 dark:border-neutral-800"
             >
               <AlertCircle className="mx-auto text-neutral-400 mb-2" size={32} />
               <p className="text-sm font-semibold text-neutral-500">No transactions match your filter</p>
@@ -216,7 +216,7 @@ export default function ExpenseList({
                         onEditExpense(expense);
                       }
                     }}
-                    className="p-4 bg-white dark:bg-[#1C1C1E] flex items-center justify-between relative z-10 cursor-pointer select-none border-b border-neutral-50 dark:border-neutral-900 group"
+                    className="p-4 bg-white dark:bg-[#15203a] flex items-center justify-between relative z-10 cursor-pointer select-none border-b border-neutral-50 dark:border-neutral-900 group"
                   >
                     <div className="flex items-center gap-3">
                       {/* Swipe toggler for screen reader or tiny tap helper */}

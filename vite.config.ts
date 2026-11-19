@@ -3,12 +3,14 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import {defineConfig} from 'vite';
 import {VitePWA} from 'vite-plugin-pwa';
+import {visualizer} from 'rollup-plugin-visualizer';
 
 export default defineConfig(() => {
   return {
     plugins: [
       react(),
       tailwindcss(),
+      ...(process.env.ANALYZE ? [visualizer({ filename: '/tmp/stats.json', template: 'raw-data' })] : []),
       VitePWA({
         registerType: 'autoUpdate',
         injectRegister: false,

@@ -7,7 +7,6 @@ import {
   TrendingUp, 
   TrendingDown, 
   DollarSign, 
-  PiggyBank, 
   Edit2, 
   Check, 
   X,
@@ -103,27 +102,24 @@ export default function Dashboard({
       {/* 1. Header Area with dynamic greeting & profile design */}
       <div className="flex items-center justify-between pt-2">
         <div>
-          <span className="text-xs font-mono tracking-widest text-[#8E8E93] uppercase font-bold">
-            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+          <span className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
+            {new Date().toLocaleDateString('en-PH', { weekday: 'long', month: 'long', day: 'numeric' })}
           </span>
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white mt-1">
+          <h1 className="text-[34px] leading-none font-bold tracking-[-0.035em] text-gray-900 dark:text-white mt-1.5">
             {getGreeting()}
           </h1>
         </div>
       </div>
 
       {/* 2. Main High-contrast Dashboard widget (The iOS circular ring or status) */}
-      <div className="p-5 rounded-2xl bg-white dark:bg-[#1C1C1E] border border-gray-100 dark:border-neutral-800 shadow-xs relative overflow-hidden transition-colors">
-        <div className="absolute top-0 right-0 p-3 text-neutral-200 dark:text-neutral-800 pointer-events-none">
-          <PiggyBank size={84} strokeWidth={1} />
-        </div>
+      <div className="p-6 rounded-3xl bg-[#14213d] dark:bg-[#15203a] text-white relative overflow-hidden transition-colors shadow-[0_24px_50px_-28px_rgba(20,33,61,0.7)] dark:border dark:border-neutral-800">
 
         <div className="flex items-start justify-between relative z-10">
           <div>
-            <h3 className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-              Spent This Month
+            <h3 className="text-sm font-medium text-white/65">
+              Spent this month
             </h3>
-            <p className="text-3xl font-black tracking-tight text-neutral-900 dark:text-white mt-1">
+            <p className="text-[40px] leading-none font-bold tracking-[-0.035em] text-white mt-2 tabular-nums">
               {formatCurrency(totalExpensesThisMonth, currencySymbol)}
             </p>
           </div>
@@ -131,7 +127,7 @@ export default function Dashboard({
           {/* Quick budget budget toggle button */}
           <div 
             onClick={() => setIsEditingBudget(true)}
-            className="flex items-center bg-neutral-100 dark:bg-neutral-800 rounded-full px-3 py-1 cursor-pointer hover:bg-blue-500/10 dark:hover:bg-blue-950/45 hover:text-blue-500 dark:hover:text-blue-400 hover:border-blue-550/20 transition-all border border-transparent"
+            className="flex items-center bg-white/10 text-white rounded-full px-3 py-1.5 cursor-pointer hover:bg-[#f5b700] hover:text-[#14213d] transition-colors"
           >
             <span className="text-xs font-medium">
               Limit: {formatCurrency(budget.limit, currencySymbol)}
@@ -141,10 +137,10 @@ export default function Dashboard({
 
         {/* Live animated status bar */}
         <div className="mt-5 space-y-2 relative z-10">
-          <div className="w-full h-2.5 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
+          <div className="w-full h-2.5 bg-white/15 rounded-full overflow-hidden">
             <motion.div 
               className={`h-full rounded-full ${
-                isOverBudget ? 'bg-red-500' : budgetPercentage > 85 ? 'bg-amber-500' : 'bg-[#34C759]'
+                isOverBudget ? 'bg-red-500' : budgetPercentage > 85 ? 'bg-orange-400' : 'bg-[#f5b700]'
               }`}
               initial={{ width: 0 }}
               animate={{ width: `${budgetPercentage}%` }}
@@ -153,10 +149,10 @@ export default function Dashboard({
           </div>
 
           <div className="flex justify-between items-center text-xs">
-            <span className="text-neutral-500 dark:text-neutral-400">
+            <span className="text-white/65">
               {budgetPercentage.toFixed(0)}% of limit used
             </span>
-            <span className={`font-semibold ${isOverBudget ? 'text-red-500' : 'text-neutral-600 dark:text-neutral-300'}`}>
+            <span className={`font-semibold ${isOverBudget ? 'text-red-300' : 'text-white'}`}>
               {isOverBudget 
                 ? `Over by ${formatCurrency(Math.abs(budget.limit - totalExpensesThisMonth), currencySymbol)}`
                 : `${formatCurrency(remainingBudget, currencySymbol)} left`
@@ -172,10 +168,10 @@ export default function Dashboard({
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="mt-4 pt-4 border-t border-neutral-100 dark:border-neutral-800 flex items-center gap-2"
+              className="mt-4 pt-4 border-t border-white/10 flex items-center gap-2"
               id="budget-edit-prompt"
             >
-              <span className="text-xs text-neutral-500 dark:text-neutral-400 whitespace-nowrap">New Budget:</span>
+              <span className="text-xs text-white/65 whitespace-nowrap">New budget</span>
               <div className="relative flex-grow">
                 <span className="absolute left-2.5 top-1.5 text-xs text-neutral-400">{currencySymbol}</span>
                 <input
@@ -183,14 +179,15 @@ export default function Dashboard({
                   value={tempBudget}
                   onChange={(e) => setTempBudget(e.target.value)}
                   placeholder="2000"
-                  className="w-full text-xs py-1.5 pl-6 pr-2 rounded-lg bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-950 dark:text-white outline-hidden focus:ring-1 focus:ring-blue-500"
+                  className="w-full text-sm py-2 pl-6 pr-2 rounded-lg bg-white text-[#14213d] border-0 outline-hidden focus:ring-2 focus:ring-[#f5b700]"
                   autoFocus
                 />
               </div>
               <div className="flex gap-1">
                 <button 
                   onClick={handleSaveBudget}
-                  className="p-1 px-2.5 bg-blue-500 hover:bg-blue-600 text-white text-xs rounded-lg font-medium"
+                  aria-label="Save budget"
+                  className="p-2 px-3 bg-[#f5b700] hover:bg-[#ffc933] text-[#14213d] text-xs rounded-lg font-semibold"
                 >
                   <Check size={14} />
                 </button>
@@ -199,7 +196,8 @@ export default function Dashboard({
                     setIsEditingBudget(false);
                     setTempBudget(budget.limit.toString());
                   }}
-                  className="p-1 px-2.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-500 text-xs rounded-lg"
+                  aria-label="Cancel"
+                  className="p-2 px-3 bg-white/10 text-white text-xs rounded-lg"
                 >
                   <X size={14} />
                 </button>
@@ -209,14 +207,14 @@ export default function Dashboard({
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="mt-4 pt-4 border-t border-neutral-100 dark:border-neutral-800 flex justify-between items-center"
+              className="mt-4 pt-4 border-t border-white/10 flex justify-between items-center"
             >
-              <span className="text-xs text-neutral-400 dark:text-neutral-500">
-                Weekly burn: <span className="font-semibold text-neutral-600 dark:text-neutral-300">{formatCurrency(totalExpensesThisWeek / 7, currencySymbol)}/day</span>
+              <span className="text-xs text-white/60">
+                Daily average this week: <span className="font-semibold text-white">{formatCurrency(totalExpensesThisWeek / 7, currencySymbol)}/day</span>
               </span>
               <button 
                 onClick={() => setIsEditingBudget(true)}
-                className="text-xs font-semibold text-blue-500 hover:text-blue-600 flex items-center gap-1 cursor-pointer"
+                className="text-xs font-semibold text-[#f5b700] hover:text-[#ffd34d] flex items-center gap-1 cursor-pointer"
               >
                 <Edit2 size={11} />
                 Adjust limit
@@ -229,38 +227,32 @@ export default function Dashboard({
       {/* 3. Daily / Weekly Micro Widgets - Clean double columns */}
       <div className="grid grid-cols-2 gap-4">
         {/* Today Card */}
-        <div className="p-4 rounded-2xl bg-white dark:bg-[#1C1C1E] border border-gray-100 dark:border-neutral-800 flex items-center justify-between">
+        <div className="p-4 rounded-2xl bg-white dark:bg-[#15203a] border border-neutral-200/70 dark:border-neutral-800 flex items-center justify-between">
           <div>
-            <span className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest block">
+            <span className="text-sm font-medium text-neutral-500 dark:text-neutral-400 block">
               Today
             </span>
-            <span className="text-xl font-bold text-neutral-900 dark:text-white mt-1 block">
+            <span className="text-[22px] font-bold tracking-tight text-neutral-900 dark:text-white mt-1 block tabular-nums">
               {formatCurrency(totalExpensesToday, currencySymbol)}
             </span>
             <span className="text-[10px] text-neutral-400 mt-1 block font-mono">
-              {todayExpenses.length} transactions
+              {todayExpenses.length} {todayExpenses.length === 1 ? 'expense' : 'expenses'}
             </span>
-          </div>
-          <div className="p-2.5 rounded-full bg-amber-50 dark:bg-amber-955 text-amber-500">
-            <TrendingUp size={18} />
           </div>
         </div>
 
         {/* This Week Card */}
-        <div className="p-4 rounded-2xl bg-white dark:bg-[#1C1C1E] border border-gray-100 dark:border-neutral-800 flex items-center justify-between">
+        <div className="p-4 rounded-2xl bg-white dark:bg-[#15203a] border border-neutral-200/70 dark:border-neutral-800 flex items-center justify-between">
           <div>
-            <span className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest block">
-              This Week
+            <span className="text-sm font-medium text-neutral-500 dark:text-neutral-400 block">
+              This week
             </span>
-            <span className="text-xl font-bold text-neutral-900 dark:text-white mt-1 block">
+            <span className="text-[22px] font-bold tracking-tight text-neutral-900 dark:text-white mt-1 block tabular-nums">
               {formatCurrency(totalExpensesThisWeek, currencySymbol)}
             </span>
             <span className="text-[10px] text-neutral-400 mt-1 block font-mono">
-              Mon - Sun cycle
+              Monday to Sunday
             </span>
-          </div>
-          <div className="p-2.5 rounded-full bg-blue-50 dark:bg-blue-955 text-blue-500">
-            <ArrowUpRight size={18} />
           </div>
         </div>
       </div>
@@ -268,18 +260,18 @@ export default function Dashboard({
       {/* 4. category Spending Breakdowns widget */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-md font-bold text-[#1C1C1E] dark:text-white tracking-tight">
-            Top Categories
+          <h2 className="text-xl font-bold text-[#14213d] dark:text-white tracking-tight">
+            Top categories
           </h2>
-          <span className="text-xs font-medium text-neutral-400">This Month</span>
+          <span className="text-sm font-medium text-neutral-500">This month</span>
         </div>
 
         {categorySummary.length === 0 ? (
-          <div className="text-center p-6 bg-white dark:bg-[#1C1C1E] rounded-2xl border border-gray-100 dark:border-neutral-800 text-neutral-400 text-xs">
+          <div className="text-center p-6 bg-white dark:bg-[#15203a] rounded-2xl border border-gray-100 dark:border-neutral-800 text-neutral-400 text-xs">
             No expenses logged this month yet.
           </div>
         ) : (
-          <div className="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-gray-100 dark:border-neutral-800 p-4 space-y-4">
+          <div className="bg-white dark:bg-[#15203a] rounded-2xl border border-gray-100 dark:border-neutral-800 p-4 space-y-4">
             {categorySummary.slice(0, 4).map((item) => (
               <div 
                 key={item.category.id} 
@@ -298,7 +290,7 @@ export default function Dashboard({
                     </div>
                     <div>
                       <span className="font-semibold text-neutral-850 dark:text-neutral-200">{item.category.name}</span>
-                      <span className="text-[10px] text-neutral-400 block font-mono">{item.count} items</span>
+                      <span className="text-[10px] text-neutral-400 block font-mono">{item.count} {item.count === 1 ? 'item' : 'items'}</span>
                     </div>
                   </div>
                   <div className="text-right">
@@ -330,24 +322,24 @@ export default function Dashboard({
       {/* 5. Recent Activity with edit shortcuts */}
       <div className="space-y-3" id="recent-expenses-dashboard">
         <div className="flex items-center justify-between">
-          <h2 className="text-md font-bold text-[#1C1C1E] dark:text-white tracking-tight">
-            Recent Expenses
+          <h2 className="text-xl font-bold text-[#14213d] dark:text-white tracking-tight">
+            Recent expenses
           </h2>
           <button 
             onClick={() => onNavigateToTab('history')}
             className="text-xs font-bold text-blue-500 hover:text-blue-600 flex items-center gap-0.5"
           >
-            See All <ChevronRight size={14} />
+            See all <ChevronRight size={14} />
           </button>
         </div>
 
         {expenses.length === 0 ? (
           <div className="text-center p-8 bg-neutral-50 dark:bg-neutral-900/50 rounded-2xl border border-dashed border-neutral-200 dark:border-neutral-800">
             <Sparkles className="mx-auto text-neutral-300 dark:text-neutral-600 mb-2" size={24} />
-            <p className="text-xs text-neutral-500">Tap the "+" tab to add your first expense!</p>
+            <p className="text-xs text-neutral-500">No expenses yet. Tap the yellow + button to log your first one.</p>
           </div>
         ) : (
-          <div className="bg-white dark:bg-[#1C1C1E] rounded-2xl border border-gray-100 dark:border-neutral-800 divide-y divide-gray-100 dark:divide-neutral-800">
+          <div className="bg-white dark:bg-[#15203a] rounded-2xl border border-gray-100 dark:border-neutral-800 divide-y divide-gray-100 dark:divide-neutral-800">
             {expenses.slice(0, 4).map((expense) => {
               const cat = getCategoryById(expense.categoryId);
               return (

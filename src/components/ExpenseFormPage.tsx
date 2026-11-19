@@ -95,10 +95,10 @@ export default function ExpenseFormPage({
           </button>
           <div>
             <h2 className="text-xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
-              {expenseToEdit ? 'Edit Transaction' : 'Record Expense'}
+              {expenseToEdit ? 'Edit expense' : 'Add expense'}
             </h2>
             <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {expenseToEdit ? 'Customize entry parameters' : 'Log a brand new expense session'}
+              {expenseToEdit ? 'Change the details and save' : 'Log what you spent'}
             </p>
           </div>
         </div>
@@ -112,9 +112,9 @@ export default function ExpenseFormPage({
         )}
 
         {/* Amount Input Layout */}
-        <div className="bg-white dark:bg-[#151518] rounded-2xl p-5 border border-neutral-200/40 dark:border-neutral-800/50 space-y-2 text-center">
+        <div className="bg-white dark:bg-[#101a33] rounded-2xl p-5 border border-neutral-200/40 dark:border-neutral-800/50 space-y-2 text-center">
           <label className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest block">
-            Transaction Amount
+            Amount
           </label>
           <div className="relative inline-flex items-center justify-center max-w-xs mx-auto">
             <span className="text-3xl font-black text-neutral-400 dark:text-neutral-600 mr-2 select-none">
@@ -134,12 +134,12 @@ export default function ExpenseFormPage({
         </div>
 
         {/* Fields and Category Grid container card */}
-        <div className="bg-white dark:bg-[#151518] rounded-2xl p-5 border border-neutral-200/40 dark:border-neutral-800/50 space-y-4">
+        <div className="bg-white dark:bg-[#101a33] rounded-2xl p-5 border border-neutral-200/40 dark:border-neutral-800/50 space-y-4">
           
           {/* Merchant DESCRIPTION */}
           <div className="space-y-1.5">
             <span className="text-xs font-bold text-neutral-400 dark:text-neutral-500 flex items-center gap-1.5 uppercase tracking-wider">
-              <FileText size={12} /> Merchant / Description
+              <FileText size={12} /> What was it for?
             </span>
             <input
               type="text"
@@ -184,7 +184,7 @@ export default function ExpenseFormPage({
           {/* Category layout */}
           <div className="space-y-1.5 pt-2">
             <span className="text-xs font-bold text-neutral-400 dark:text-neutral-500 flex items-center gap-1.5 uppercase tracking-wider">
-              <Tag size={12} /> Select Category
+              <Tag size={12} /> Category
             </span>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2" id="grid-category-selection">
               {SYSTEM_CATEGORIES.map((cat) => {
@@ -240,7 +240,7 @@ export default function ExpenseFormPage({
             type="submit"
             className="flex-3 p-3.5 bg-blue-500 hover:bg-blue-600 text-white text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md hover:shadow-lg transition-all cursor-pointer"
           >
-            <Check size={16} /> Save Transaction
+            <Check size={16} /> Save expense
           </button>
         </div>
       </form>
