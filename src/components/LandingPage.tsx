@@ -1,9 +1,13 @@
-import { useLayoutEffect, useRef } from 'react';
+import { useLayoutEffect, useRef, useState, useCallback } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { Draggable } from 'gsap/Draggable';
+import { InertiaPlugin } from 'gsap/InertiaPlugin';
 import './landing.css';
 
-gsap.registerPlugin(ScrollTrigger);
+gsap.registerPlugin(ScrollTrigger, Draggable, InertiaPlugin);
+
+const PORTFOLIO_URL = 'https://jeraldesguerra.vercel.app/';
 
 type AuthMode = 'signin' | 'signup';
 
@@ -40,6 +44,95 @@ const peso = (n: number) => '₱' + n.toLocaleString('en-PH', { minimumFractionD
 export default function LandingPage({ onAuth }: LandingPageProps) {
   const root = useRef<HTMLDivElement>(null);
   const totalRef = useRef<HTMLSpanElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef<Draggable | null>(null);
+  const [atStart, setAtStart] = useState(true);
+  const [atEnd, setAtEnd] = useState(false);
+
+  // Snap points: one per card, clamped so the last card lines up with the edge
+  const getMinX = () => {
+    const vp = viewportRef.current, track = trackRef.current;
+    return vp && track ? Math.min(0, vp.clientWidth - track.scrollWidth) : 0;
+  };
+  const getSnaps = () => {
+    const track = trackRef.current;
+    if (!track) return [0];
+    const cards = Array.from(track.children) as HTMLElement[];
+    const first = cards[0]?.offsetLeft ?? 0;
+    const min = getMinX();
+    const pts = cards.map((c) => {
+      const x = Math.max(min, -(c.offsetLeft - first));
+      return x - min < 40 ? min : x; // merge a tiny last step into the end position
+    });
+    return Array.from(new Set(pts.map((p) => Math.round(p))));
+  };
+  const syncArrows = useCallback(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    const x = Number(gsap.getProperty(track, 'x'));
+    setAtStart(x >= -2);
+    setAtEnd(x <= getMinX() + 2);
+  }, []);
+
+  useLayoutEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    const [drag] = Draggable.create(track, {
+      type: 'x',
+      bounds: { minX: getMinX(), maxX: 0 },
+      inertia: true,
+      edgeResistance: 0.85,
+      cursor: 'grab',
+      activeCursor: 'grabbing',
+      zIndexBoost: false,
+      snap: {
+        x: (value: number) => {
+          const snaps = getSnaps();
+          return snaps.reduce((best, p) => (Math.abs(p - value) < Math.abs(best - value) ? p : best), snaps[0]);
+        },
+      },
+      onDrag: syncArrows,
+      onThrowUpdate: syncArrows,
+      onThrowComplete: syncArrows,
+      onDragEnd: syncArrows,
+    });
+    dragRef.current = drag;
+
+    const onResize = () => {
+      const min = getMinX();
+      drag.applyBounds({ minX: min, maxX: 0 });
+      const x = Number(gsap.getProperty(track, 'x'));
+      if (x < min) gsap.set(track, { x: min });
+      drag.update();
+      syncArrows();
+    };
+    window.addEventListener('resize', onResize);
+    window.addEventListener('load', onResize);
+    syncArrows();
+    return () => {
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('load', onResize);
+      drag.kill();
+    };
+  }, [syncArrows]);
+
+  const go = (dir: 1 | -1) => {
+    const track = trackRef.current;
+    if (!track) return;
+    const snaps = getSnaps();
+    const x = Number(gsap.getProperty(track, 'x'));
+    let i = snaps.reduce((bi, p, idx) => (Math.abs(p - x) < Math.abs(snaps[bi] - x) ? idx : bi), 0);
+    i = Math.min(snaps.length - 1, Math.max(0, i + dir));
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    gsap.to(track, {
+      x: snaps[i],
+      duration: reduce ? 0 : 0.7,
+      ease: 'power3.out',
+      onUpdate: syncArrows,
+      onComplete: () => { dragRef.current?.update(); syncArrows(); },
+    });
+  };
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
@@ -70,32 +163,6 @@ export default function LandingPage({ onAuth }: LandingPageProps) {
           yPercent: 10,
           ease: 'none',
           scrollTrigger: { trigger: '.lp-final', start: 'top bottom', end: 'bottom top', scrub: true },
-        });
-      });
-
-      // Gallery: pinned horizontal scroll on larger screens
-      mm.add('(min-width: 901px) and (prefers-reduced-motion: no-preference)', () => {
-        const track = document.querySelector<HTMLElement>('.lp-track');
-        if (!track) return;
-        const distance = () => track.scrollWidth - window.innerWidth;
-        const tween = gsap.to(track, {
-          x: () => -distance(),
-          ease: 'none',
-          scrollTrigger: {
-            trigger: '.lp-gallery',
-            start: 'top top',
-            end: () => '+=' + distance(),
-            pin: true,
-            scrub: 0.6,
-            invalidateOnRefresh: true,
-          },
-        });
-        gsap.utils.toArray<HTMLElement>('.lp-shot-img img').forEach((img) => {
-          gsap.fromTo(img, { xPercent: 4 }, {
-            xPercent: -4,
-            ease: 'none',
-            scrollTrigger: { trigger: img, containerAnimation: tween, start: 'left right', end: 'right left', scrub: true },
-          });
         });
       });
 
@@ -176,16 +243,26 @@ export default function LandingPage({ onAuth }: LandingPageProps) {
           </div>
         </section>
 
-        <section className="lp-gallery" aria-labelledby="gallery-title">
+        <section className="lp-gallery" aria-labelledby="gallery-title" aria-roledescription="carousel">
           <div className="lp-gallery-inner">
             <div className="lp-wrap lp-gallery-head">
               <h2 className="lp-h2" id="gallery-title">Small amounts<br />add up fast.</h2>
-              <p>A ₱13 jeep ride and a ₱120 coffee don't feel like much. A month of them does. Pesus puts every category side by side.</p>
+              <div className="lp-gallery-side">
+                <p>A ₱13 jeep ride and a ₱120 coffee don't feel like much. A month of them does. Pesus puts every category side by side.</p>
+                <div className="lp-arrows">
+                  <button type="button" className="lp-arrow" onClick={() => go(-1)} disabled={atStart} aria-label="Previous photo">
+                    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                  </button>
+                  <button type="button" className="lp-arrow" onClick={() => go(1)} disabled={atEnd} aria-label="Next photo">
+                    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                  </button>
+                </div>
+              </div>
             </div>
-            <div className="lp-gallery-scroller">
-              <div className="lp-track">
-                {SHOTS.map((s) => (
-                  <figure className="lp-shot" key={s.id}>
+            <div className="lp-carousel" ref={viewportRef}>
+              <div className="lp-track" ref={trackRef}>
+                {SHOTS.map((s, i) => (
+                  <figure className="lp-shot" key={s.id} aria-roledescription="slide" aria-label={`${i + 1} of ${SHOTS.length}`}>
                     <div className="lp-shot-img">
                       <img
                         src={px(s.id, 800)}
@@ -194,6 +271,7 @@ export default function LandingPage({ onAuth }: LandingPageProps) {
                         alt={s.alt}
                         loading="lazy"
                         decoding="async"
+                        draggable={false}
                       />
                     </div>
                     <span className="lp-tag">{s.amount}<small>a month</small></span>
@@ -205,7 +283,7 @@ export default function LandingPage({ onAuth }: LandingPageProps) {
                 ))}
               </div>
             </div>
-            <p className="lp-wrap lp-gallery-note">Sample monthly amounts, for illustration.</p>
+            <p className="lp-wrap lp-gallery-note">Drag or use the arrows to browse. Sample monthly amounts, for illustration.</p>
           </div>
         </section>
 
@@ -273,12 +351,29 @@ export default function LandingPage({ onAuth }: LandingPageProps) {
           <div className="lp-final-bg" aria-hidden="true">
             <img src={px('188916', 1600)} srcSet={srcSet('188916', [800, 1600, 2400])} sizes="100vw" alt="" loading="lazy" decoding="async" />
           </div>
-          <div className="lp-wrap">
-            <h2 className="lp-h2" id="final-title">Next payday, know exactly where it went.</h2>
-            <p>Pesus is free. Create your account with Google and log your first expense today.</p>
-            <div className="lp-cta">
-              <button type="button" className="lp-btn lp-btn--light" onClick={() => onAuth('signup')}>Create free account</button>
-              <button type="button" className="lp-btn lp-btn--outline-light" onClick={() => onAuth('signin')}>Sign in</button>
+          <div className="lp-wrap lp-final-grid">
+            <div>
+              <h2 className="lp-h2" id="final-title">Next payday, know exactly where it went.</h2>
+              <p>Start with today's spending. In a week you'll see your habits. In a month you'll see where to cut.</p>
+            </div>
+            <div className="lp-ticket">
+              <div className="lp-ticket-paper">
+                <div className="lp-r-head">
+                  <strong>YOUR PESUS ACCOUNT</strong>
+                  <span>What it costs you</span>
+                </div>
+                <div className="lp-r-row"><span>Sign-up</span><span>₱0.00</span></div>
+                <div className="lp-r-row"><span>Monthly fee</span><span>₱0.00</span></div>
+                <div className="lp-r-row"><span>Google sign-in</span><span>Included</span></div>
+                <div className="lp-r-row"><span>Phone and laptop sync</span><span>Included</span></div>
+                <div className="lp-r-row"><span>Backup and restore</span><span>Included</span></div>
+                <div className="lp-r-sep" />
+                <div className="lp-r-row lp-r-total"><span>Total</span><span>₱0.00</span></div>
+                <div className="lp-ticket-actions">
+                  <button type="button" className="lp-btn lp-btn--primary" onClick={() => onAuth('signup')}>Create free account</button>
+                  <button type="button" className="lp-btn lp-btn--ghost" onClick={() => onAuth('signin')}>Sign in</button>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -286,8 +381,31 @@ export default function LandingPage({ onAuth }: LandingPageProps) {
 
       <footer className="lp-foot">
         <div className="lp-wrap">
-          <span className="lp-brand"><span className="lp-coin" aria-hidden="true">₱</span>pesus</span>
-          <span>© {new Date().getFullYear()} Pesus. Photos from <a href="https://www.pexels.com" target="_blank" rel="noreferrer">Pexels</a>.</span>
+          <div className="lp-foot-top">
+            <div className="lp-foot-intro">
+              <span className="lp-brand"><span className="lp-coin" aria-hidden="true">₱</span>pesus</span>
+              <p>A simple expense tracker for everyday spending in pesos.</p>
+            </div>
+            <nav className="lp-foot-nav" aria-label="Footer">
+              <div>
+                <h3>Get started</h3>
+                <button type="button" onClick={() => onAuth('signup')}>Create account</button>
+                <button type="button" onClick={() => onAuth('signin')}>Sign in</button>
+              </div>
+              <div>
+                <h3>On this page</h3>
+                <a href="#gallery-title">Where it goes</a>
+                <a href="#steps-title">How it works</a>
+                <a href="#features-title">Features</a>
+                <a href="#top">Back to top</a>
+              </div>
+            </nav>
+          </div>
+          <div className="lp-foot-word" aria-hidden="true">pesus</div>
+          <div className="lp-foot-bottom">
+            <span>© {new Date().getFullYear()} Pesus. Photos from <a href="https://www.pexels.com" target="_blank" rel="noreferrer">Pexels</a>.</span>
+            <span>Developed by <a className="lp-dev" href={PORTFOLIO_URL} target="_blank" rel="noreferrer">Jerald Esguerra</a></span>
+          </div>
         </div>
       </footer>
     </div>
