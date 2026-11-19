@@ -439,7 +439,7 @@ export default function App() {
   }
 
   return (
-    <div className={`${theme} min-h-screen bg-[#e6ebef] dark:bg-[#0b1428] font-sans antialiased text-neutral-950 dark:text-white transition-colors flex flex-col justify-between relative`} id="applet-primary-container">
+    <div className={`${theme} min-h-screen bg-[#e6ebef] dark:bg-[#0b1428] font-sans antialiased text-neutral-950 dark:text-white transition-colors flex flex-col justify-between relative`} id="app-root">
       
       {/* Subtle Floating DB Connection Status Indicator (No layout footprint) */}
       <div className="absolute top-4 right-4 z-50 flex items-center gap-1.5 pointer-events-none select-none">

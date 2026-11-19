@@ -90,6 +90,9 @@ export default defineConfig(() => {
           globIgnores: ['**/*cyrillic*', '**/*vietnamese*', '**/*greek*'],
           maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
           navigateFallback: '/index.html',
+          // Activate new versions right away so visitors never get stuck on an older release
+          skipWaiting: true,
+          clientsClaim: true,
           cleanupOutdatedCaches: true,
           runtimeCaching: [
             {
@@ -109,13 +112,6 @@ export default defineConfig(() => {
       alias: {
         '@': path.resolve(__dirname, '.'),
       },
-    },
-    server: {
-      // HMR is disabled in AI Studio via DISABLE_HMR env var.
-      // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
-      hmr: process.env.DISABLE_HMR !== 'true',
-      // Disable file watching when DISABLE_HMR is true to save CPU during agent edits.
-      watch: process.env.DISABLE_HMR === 'true' ? null : {},
     },
   };
 });

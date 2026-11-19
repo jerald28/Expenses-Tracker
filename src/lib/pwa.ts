@@ -25,7 +25,14 @@ if (typeof window !== 'undefined') {
 }
 
 export function registerServiceWorker() {
-  if ('serviceWorker' in navigator) registerSW({ immediate: true });
+  if (!('serviceWorker' in navigator)) return;
+  const updateSW = registerSW({
+    immediate: true,
+    // If an update is waiting (e.g. from an older release), apply it and reload once
+    onNeedRefresh() {
+      updateSW(true);
+    },
+  });
 }
 
 export const isStandalone = () =>
