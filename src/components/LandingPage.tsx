@@ -35,7 +35,10 @@ const SHOTS = [
   { id: '37400607', title: 'Jeep and Grab rides', sub: 'Commute', amount: '₱1,260', alt: 'A colorful jeepney on a sunny street in the Philippines' },
   { id: '33180381', title: 'The daily iced kape', sub: 'Coffee', amount: '₱2,400', alt: 'A young woman with an iced coffee checking her phone outdoors' },
   { id: '37160272', title: 'Merienda sa kanto', sub: 'Food', amount: '₱1,850', alt: 'A street food vendor in Manila grilling skewers' },
+  { id: '37374770', title: 'Load and mobile data', sub: 'Load', amount: '₱599', alt: 'A man using his phone inside a colorful jeepney' },
   { id: '37449316', title: 'The weekly palengke run', sub: 'Groceries', amount: '₱4,800', alt: 'Tropical fruits on display at a market stall in the Philippines' },
+  { id: '20089299', title: 'Sunday family lunch', sub: 'Family', amount: '₱2,500', alt: 'A table full of Filipino dishes for a family meal' },
+  { id: '757436', title: 'Divisoria finds', sub: 'Shopping', amount: '₱1,500', alt: 'A crowded street market in Manila' },
   { id: '2604843', title: 'Bills and everything else', sub: 'Bills', amount: '₱5,600', alt: 'Busy Manila street on a rainy day' },
 ];
 
