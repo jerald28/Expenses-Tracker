@@ -3,6 +3,12 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Draggable } from 'gsap/Draggable';
 import { InertiaPlugin } from 'gsap/InertiaPlugin';
+import '@fontsource/familjen-grotesk/400.css';
+import '@fontsource/familjen-grotesk/500.css';
+import '@fontsource/familjen-grotesk/600.css';
+import '@fontsource/familjen-grotesk/700.css';
+import '@fontsource/ibm-plex-mono/400.css';
+import '@fontsource/ibm-plex-mono/600.css';
 import './landing.css';
 
 gsap.registerPlugin(ScrollTrigger, Draggable, InertiaPlugin);
@@ -158,12 +164,7 @@ export default function LandingPage({ onAuth }: LandingPageProps) {
         }, '-=0.5')
           .from('.lp-stamp', { autoAlpha: 0, scale: 1.6, rotate: -18, duration: 0.45, ease: 'back.out(2.2)' }, '-=0.2');
 
-        // Final CTA background drifts slightly as it scrolls past
-        gsap.to('.lp-final-bg', {
-          yPercent: 10,
-          ease: 'none',
-          scrollTrigger: { trigger: '.lp-final', start: 'top bottom', end: 'bottom top', scrub: true },
-        });
+
       });
 
       return () => mm.revert();
@@ -198,9 +199,8 @@ export default function LandingPage({ onAuth }: LandingPageProps) {
           <div className="lp-wrap">
             <div>
               <h1 className="lp-h1">
-                <span className="ln"><span>Where did</span></span>
-                <span className="ln"><span>my pesos</span></span>
-                <span className="ln"><span>go?</span></span>
+                <span className="ln"><span>Where did my</span></span>
+                <span className="ln"><span>pesos go?</span></span>
               </h1>
               <p className="lp-lede">
                 Pesus answers that. Log what you spend in a few taps, see it by day, week and month, and stay under the budget you set.
@@ -283,7 +283,6 @@ export default function LandingPage({ onAuth }: LandingPageProps) {
                 ))}
               </div>
             </div>
-            <p className="lp-wrap lp-gallery-note">Drag or use the arrows to browse. Sample monthly amounts, for illustration.</p>
           </div>
         </section>
 
@@ -348,30 +347,33 @@ export default function LandingPage({ onAuth }: LandingPageProps) {
         </section>
 
         <section className="lp-final" aria-labelledby="final-title">
-          <div className="lp-final-bg" aria-hidden="true">
-            <img src={px('188916', 1600)} srcSet={srcSet('188916', [800, 1600, 2400])} sizes="100vw" alt="" loading="lazy" decoding="async" />
-          </div>
-          <div className="lp-wrap lp-final-grid">
-            <div>
-              <h2 className="lp-h2" id="final-title">Next payday, know exactly where it went.</h2>
-              <p>Start with today's spending. In a week you'll see your habits. In a month you'll see where to cut.</p>
-            </div>
-            <div className="lp-ticket">
-              <div className="lp-ticket-paper">
-                <div className="lp-r-head">
-                  <strong>YOUR PESUS ACCOUNT</strong>
-                  <span>What it costs you</span>
-                </div>
-                <div className="lp-r-row"><span>Sign-up</span><span>₱0.00</span></div>
-                <div className="lp-r-row"><span>Monthly fee</span><span>₱0.00</span></div>
-                <div className="lp-r-row"><span>Google sign-in</span><span>Included</span></div>
-                <div className="lp-r-row"><span>Phone and laptop sync</span><span>Included</span></div>
-                <div className="lp-r-row"><span>Backup and restore</span><span>Included</span></div>
-                <div className="lp-r-sep" />
-                <div className="lp-r-row lp-r-total"><span>Total</span><span>₱0.00</span></div>
-                <div className="lp-ticket-actions">
+          <div className="lp-wrap">
+            <div className="lp-final-panel">
+              <div className="lp-final-copy">
+                <h2 className="lp-h2" id="final-title">Next payday, know exactly where it went.</h2>
+                <p>Start with today's spending. In a week you'll see your habits. In a month you'll see where to cut.</p>
+                <div className="lp-cta">
                   <button type="button" className="lp-btn lp-btn--primary" onClick={() => onAuth('signup')}>Create free account</button>
                   <button type="button" className="lp-btn lp-btn--ghost" onClick={() => onAuth('signin')}>Sign in</button>
+                </div>
+                <ul className="lp-final-facts">
+                  <li><b>₱0</b><span>to sign up</span></li>
+                  <li><b>₱0</b><span>a month</span></li>
+                  <li><b>1 tap</b><span>Google sign-in</span></li>
+                </ul>
+              </div>
+              <div className="lp-final-photo">
+                <img
+                  src={px('38336130', 1000)}
+                  srcSet={srcSet('38336130', [600, 1000, 1400])}
+                  sizes="(max-width: 900px) 100vw, 40vw"
+                  alt="A smiling woman outdoors in Manila"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <div className="lp-final-chip" aria-hidden="true">
+                  <span>Left this month</span>
+                  <b>₱6,439.00</b>
                 </div>
               </div>
             </div>
@@ -381,10 +383,10 @@ export default function LandingPage({ onAuth }: LandingPageProps) {
 
       <footer className="lp-foot">
         <div className="lp-wrap">
-          <div className="lp-foot-top">
+          <div className="lp-foot-grid">
             <div className="lp-foot-intro">
               <span className="lp-brand"><span className="lp-coin" aria-hidden="true">₱</span>pesus</span>
-              <p>A simple expense tracker for everyday spending in pesos.</p>
+              <p>A simple expense tracker for everyday spending in pesos. Free to use.</p>
             </div>
             <nav className="lp-foot-nav" aria-label="Footer">
               <div>
@@ -397,14 +399,20 @@ export default function LandingPage({ onAuth }: LandingPageProps) {
                 <a href="#gallery-title">Where it goes</a>
                 <a href="#steps-title">How it works</a>
                 <a href="#features-title">Features</a>
-                <a href="#top">Back to top</a>
               </div>
             </nav>
+            <a className="lp-dev-card" href={PORTFOLIO_URL} target="_blank" rel="noreferrer">
+              <span className="lp-dev-label">Designed and developed by</span>
+              <span className="lp-dev-name">Jerald Esguerra</span>
+              <span className="lp-dev-role">UI/UX Developer</span>
+              <span className="lp-dev-cta">View portfolio</span>
+            </a>
           </div>
-          <div className="lp-foot-word" aria-hidden="true">pesus</div>
+          <div className="lp-foot-word" aria-hidden="true"><span>pesus</span></div>
           <div className="lp-foot-bottom">
-            <span>© {new Date().getFullYear()} Pesus. Photos from <a href="https://www.pexels.com" target="_blank" rel="noreferrer">Pexels</a>.</span>
-            <span>Developed by <a className="lp-dev" href={PORTFOLIO_URL} target="_blank" rel="noreferrer">Jerald Esguerra</a></span>
+            <span>© {new Date().getFullYear()} Pesus</span>
+            <span>Photos from <a href="https://www.pexels.com" target="_blank" rel="noreferrer">Pexels</a></span>
+            <a href="#top">Back to top</a>
           </div>
         </div>
       </footer>
